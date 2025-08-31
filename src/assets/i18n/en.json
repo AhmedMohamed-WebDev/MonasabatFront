@@ -265,7 +265,13 @@
     "outdoor-events": "Outdoor Events",
     "farm-catering": "Farm Catering",
     "farm-decoration": "Farm Decoration",
-    "farm-photography": "Farm Photography"
+    "farm-photography": "Farm Photography",
+    "catering": "Catering Services",
+    "decoration": "Decoration",
+    "photography": "Photography & Video",
+    "entertainment": "Entertainment",
+    "equipment": "Audio/Visual Equipment",
+    "photography-documentation": "Photography & Documentation"
   },
   "serviceDetails": {
     "loading": {
@@ -331,14 +337,28 @@
     }
   },
   "cities": {
-    "amman": "Amman",
-    "irbid": "Irbid",
-    "zarqa": "Zarqa",
-    "aqaba": "Aqaba",
-    "salt": "Salt",
-    "madaba": "Madaba",
-    "karak": "Karak",
-    "tafilah": "Tafilah"
+    "jordan": {
+      "title": "Jordan",
+      "amman": "Amman",
+      "irbid": "Irbid",
+      "zarqa": "Zarqa",
+      "aqaba": "Aqaba",
+      "salt": "Salt",
+      "madaba": "Madaba",
+      "karak": "Karak",
+      "tafilah": "Tafilah"
+    },
+    "kuwait": {
+      "title": "Kuwait",
+      "kuwait_city": "Kuwait City",
+      "ahmadi": "Ahmadi",
+      "hawalli": "Hawalli",
+      "jahra": "Jahra",
+      "farwaniya": "Farwaniya",
+      "mubarak_al_kabeer": "Mubarak Al-Kabeer",
+      "salmiya": "Salmiya",
+      "fahaheel": "Fahaheel"
+    }
   },
   "peopleRanges": {
     "50-100": "50-100",
@@ -441,13 +461,6 @@
       "sending": "Sending...",
       "verifying": "Verifying..."
     },
-    "validation": {
-      "nameMinLength": "Please enter your full name (minimum 2 characters)",
-      "phoneRequired": "Please enter your phone number",
-      "phoneInvalid": "Please enter a valid Jordanian phone number",
-      "otpRequired": "Please enter the OTP",
-      "otpLength": "OTP must be 6 digits"
-    },
     "messages": {
       "otpSent": "OTP sent successfully via WhatsApp!",
       "otpSendFailed": "Failed to send OTP. Please try again.",
@@ -456,6 +469,13 @@
       "newUserName": "It looks like you're new! Please enter your name.",
       "otpExpiry": "OTP will expire in {{minutes}} minutes",
       "devMode": "Development Mode: OTP auto-filled"
+    },
+    "validation": {
+      "nameMinLength": "Please enter your full name (minimum 2 characters)",
+      "phoneRequired": "Please enter your phone number",
+      "phoneInvalid": "Please enter a valid Jordanian or Kuwaiti phone number",
+      "otpRequired": "Please enter the OTP",
+      "otpLength": "OTP must be 6 digits"
     },
     "footer": {
       "termsNotice": "By continuing, you agree to our Terms of Service"
@@ -624,7 +644,7 @@
       "info": {
         "address": {
           "title": "Address",
-          "value": "Amman, Jordan"
+          "value": "Amman, Jordan | Kuwait City, Kuwait"
         },
         "phone": {
           "title": "Phone",
@@ -659,12 +679,12 @@
   },
   "join": {
     "header": {
-      "title": "Join as Supplier",
+      "title": "Join as Service Provider",
       "subtitle": "Partner with us to grow your event business"
     },
     "alerts": {
       "success": {
-        "message": "Your request has been submitted successfully! We'll contact you soon."
+        "message": "Your request has been submitted successfully! We will contact you soon."
       },
       "error": {
         "default": "Failed to submit request. Please try again."
@@ -681,31 +701,49 @@
       },
       "placeholders": {
         "name": "Enter your full name",
-        "phone": "7X XXX XXXX",
+        "phone": "Enter your phone number",
         "city": "Select your city",
         "serviceType": "Select service type",
         "notes": "Tell us more about your services (optional)",
         "otherServiceType": "Please describe your service"
       },
-      "validation": {
-        "required": "{{field}} is required",
-        "minLength": "{{field}} must be at least {{count}} characters",
-        "phoneInvalid": "Please enter a valid Jordanian phone number"
-      },
       "hints": {
-        "phone": "Enter your number in any format: 07X XXX XXXX, 7X XXX XXXX, or +962 7X XXX XXXX"
+        "phone": {
+          "jordan": "Enter your number in any format: 07X XXX XXXX, 7X XXX XXXX, or +962 7X XXX XXXX",
+          "kuwait": "Enter your number in any format: 05X XXX XXXX, 5X XXX XXXX, or +965 5X XXX XXXX"
+        }
+      },
+      "validation": {
+        "required": "This field is required",
+        "name": {
+          "required": "Please enter your full name",
+          "minlength": "Name must be at least 2 characters"
+        },
+        "phone": {
+          "required": "Please enter your phone number",
+          "invalid": "Please enter a valid phone number"
+        },
+        "city": {
+          "required": "Please select your city"
+        },
+        "serviceType": {
+          "required": "Please select a service type"
+        },
+        "otherServiceType": {
+          "required": "Please specify your service"
+        }
       }
     },
     "buttons": {
-      "submit": "Send Request",
-      "submitting": "Sending Request..."
+      "submit": "Submit Request",
+      "submitting": "Submitting..."
     },
     "footer": {
-      "reviewInfo": "We'll review your application and contact you within 24-48 hours"
+      "reviewInfo": "We will review your request and contact you within 24-48 hours"
     },
     "status": {
-      "pending": "Your request is pending approval.",
-      "approved": "Your request has been approved."
+      "pending": "Your request is under review",
+      "approved": "Your request has been approved"
     }
   },
   "clientDashboard": {
@@ -944,14 +982,16 @@
         },
         "eventType": {
           "label": "Event Type *",
-          "placeholder": "Select Event Type"
+          "placeholder": "Select Event Type",
+          "error": "Please select an event type"
         },
         "serviceType": {
           "label": "Service Type *",
-          "placeholder": "Select Service Type"
+          "placeholder": "Select Service Type",
+          "error": "Please select a service type"
         },
         "price": {
-          "label": "Price (JD)",
+          "label": "Price (JD/KWD)",
           "placeholder": "0.00",
           "error": "Please enter a valid price"
         },
@@ -970,7 +1010,8 @@
         "title": "Location",
         "city": {
           "label": "City *",
-          "placeholder": "Select City"
+          "placeholder": "Select City",
+          "error": "Please select a city"
         },
         "area": {
           "label": "Area",
@@ -983,12 +1024,14 @@
         "latitude": {
           "label": "Latitude",
           "placeholder": "Enter latitude (e.g. 31.9539)",
-          "error": "Please enter a valid latitude"
+          "error": "Please enter a valid latitude",
+          "description": "Coordinates are optional but help customers find your location easily"
         },
         "longitude": {
           "label": "Longitude",
           "placeholder": "Enter longitude (e.g. 35.9106)",
-          "error": "Please enter a valid longitude"
+          "error": "Please enter a valid longitude",
+          "description": "Coordinates are optional but help customers find your location easily"
         }
       },
       "dates": {

@@ -18,17 +18,11 @@ import { isContactOnlyService } from '../../core/models/constants/categories.con
 import { NotificationService } from '../../core/services/notification.service';
 import { PhoneUtils } from '../../core/utils/phone.utils';
 import { Subject, takeUntil } from 'rxjs';
-import { NotificationToastComponent } from '../../shared/components/notification-toast/notification-toast.component';
 
 @Component({
   selector: 'app-service-detail',
   standalone: true,
-  imports: [
-    CommonModule,
-    RouterModule,
-    TranslateModule,
-    NotificationToastComponent,
-  ],
+  imports: [CommonModule, RouterModule, TranslateModule],
   templateUrl: './service-details.component.html',
   styleUrls: ['./service-details.component.css'],
 })
@@ -263,7 +257,11 @@ export class ServiceDetailComponent implements OnInit, OnDestroy {
     }
 
     if (!this.service?.supplier) {
-      this.notificationService.show('error', 'Error', 'No supplier information found');
+      this.notificationService.show(
+        'error',
+        'Error',
+        'No supplier information found'
+      );
       return;
     }
 
@@ -278,14 +276,23 @@ export class ServiceDetailComponent implements OnInit, OnDestroy {
         return;
       } catch (error) {
         console.error('Error opening chat:', error);
-        this.notificationService.show('error', 'Error', 'Failed to open chat. Please try again.');
+        this.notificationService.show(
+          'error',
+          'Error',
+          'Failed to open chat. Please try again.'
+        );
         return;
       }
     }
 
     // For contact-only services, check contact request approval
     if (!this.chatAccess.canChat) {
-      this.notificationService.show('warning', 'Chat Not Available', this.chatAccess.reason || 'You need an approved contact request to chat with this supplier.');
+      this.notificationService.show(
+        'warning',
+        'Chat Not Available',
+        this.chatAccess.reason ||
+          'You need an approved contact request to chat with this supplier.'
+      );
       return;
     }
 
@@ -297,7 +304,11 @@ export class ServiceDetailComponent implements OnInit, OnDestroy {
       });
     } catch (error) {
       console.error('Error opening chat:', error);
-      this.notificationService.show('error', 'Error', 'Failed to open chat. Please try again.');
+      this.notificationService.show(
+        'error',
+        'Error',
+        'Failed to open chat. Please try again.'
+      );
     }
   }
 
@@ -324,7 +335,7 @@ export class ServiceDetailComponent implements OnInit, OnDestroy {
     if (!this.service?.supplier?._id) return;
 
     this.checkingChatAccess = true;
-    
+
     // For bookable services, allow direct chat access
     if (this.shouldShowBookingButton()) {
       this.chatAccess = { canChat: true };
@@ -461,7 +472,11 @@ export class ServiceDetailComponent implements OnInit, OnDestroy {
   sendContactRequest() {
     // Prevent contact requests for bookable services
     if (this.shouldShowBookingButton()) {
-      this.notificationService.show('warning', 'Not Available', 'Contact requests are not available for bookable services. Please use the booking form instead.');
+      this.notificationService.show(
+        'warning',
+        'Not Available',
+        'Contact requests are not available for bookable services. Please use the booking form instead.'
+      );
       return;
     }
 
@@ -576,4 +591,3 @@ export class ServiceDetailComponent implements OnInit, OnDestroy {
     return this.chatAccess.reason || 'Contact request required to chat';
   }
 }
-

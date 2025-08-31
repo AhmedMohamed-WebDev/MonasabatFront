@@ -182,6 +182,12 @@
     "farm-catering": "مطاعم المزارع",
     "farm-decoration": "ديكور المزارع",
     "farm-photography": "تصوير المزارع",
+    "catering": "خدمات ضيافة",
+    "decoration": "ديكور",
+    "photography": "تصوير وفيديو",
+    "entertainment": "ترفيه",
+    "equipment": "معدات سمعية وبصرية",
+    "photography-documentation": "تصوير وتوثيق",
     "garden-venues": "حدائق ومواقع",
     "mountain-view-farms": "مزارع بإطلالة جبلية",
     "villa-farms": "مزارع مع فلل",
@@ -274,14 +280,28 @@
     "live-musician": "موسيقي حي"
   },
   "cities": {
-    "amman": "عمان",
-    "irbid": "إربد",
-    "zarqa": "الزرقاء",
-    "aqaba": "العقبة",
-    "salt": "السلط",
-    "madaba": "مادبا",
-    "karak": "الكرك",
-    "tafilah": "الطفيلة"
+    "jordan": {
+      "title": "الأردن",
+      "amman": "عمان",
+      "irbid": "إربد",
+      "zarqa": "الزرقاء",
+      "aqaba": "العقبة",
+      "salt": "السلط",
+      "madaba": "مادبا",
+      "karak": "الكرك",
+      "tafilah": "الطفيلة"
+    },
+    "kuwait": {
+      "title": "الكويت",
+      "kuwait_city": "مدينة الكويت",
+      "ahmadi": "الأحمدي",
+      "hawalli": "حولي",
+      "jahra": "الجهراء",
+      "farwaniya": "الفروانية",
+      "mubarak_al_kabeer": "مبارك الكبير",
+      "salmiya": "السالمية",
+      "fahaheel": "الفحيحيل"
+    }
   },
   "peopleRanges": {
     "50-100": "50-100",
@@ -450,7 +470,7 @@
     "validation": {
       "nameMinLength": "يرجى إدخال اسمك الكامل (حرفين على الأقل)",
       "phoneRequired": "يرجى إدخال رقم هاتفك",
-      "phoneInvalid": "يرجى إدخال رقم هاتف أردني صحيح",
+      "phoneInvalid": "يرجى إدخال رقم هاتف أردني أو كويتي صحيح",
       "otpRequired": "يرجى إدخال رمز OTP",
       "otpLength": "يجب أن يتكون رمز OTP من 6 أرقام"
     },
@@ -630,7 +650,7 @@
       "info": {
         "address": {
           "title": "العنوان",
-          "value": "عمان، الأردن"
+          "value": "عمان، الأردن | مدينة الكويت، الكويت"
         },
         "phone": {
           "title": "الهاتف",
@@ -679,15 +699,16 @@
     "form": {
       "labels": {
         "fullName": "الاسم الكامل",
+        "name": "الاسم الكامل",
         "phone": "رقم الهاتف",
         "city": "المدينة",
         "serviceType": "نوع الخدمة",
-        "notes": "ملاحظات إضافية",
-        "otherServiceType": "حدد خدمتك"
+        "otherServiceType": "حدد خدمتك",
+        "notes": "ملاحظات إضافية"
       },
       "placeholders": {
         "name": "أدخل اسمك الكامل",
-        "phone": "7X XXX XXXX",
+        "phone": "أدخل رقم هاتفك",
         "city": "اختر مدينتك",
         "serviceType": "اختر نوع الخدمة",
         "notes": "أخبرنا المزيد عن خدماتك (اختياري)",
@@ -696,10 +717,16 @@
       "validation": {
         "required": "{{field}} مطلوب",
         "minLength": "يجب أن يحتوي {{field}} على {{count}} حروف على الأقل",
-        "phoneInvalid": "يرجى إدخال رقم هاتف أردني صحيح"
+        "phoneInvalid": {
+          "jordan": "يرجى إدخال رقم هاتف أردني صحيح",
+          "kuwait": "يرجى إدخال رقم هاتف كويتي صحيح"
+        }
       },
       "hints": {
-        "phone": "أدخل رقمك بأي تنسيق: 07X XXX XXXX أو 7X XXX XXXX أو 962+ 7X XXX XXXX"
+        "phone": {
+          "jordan": "أدخل رقمك بأي تنسيق: 07X XXX XXXX أو 7X XXX XXXX أو 962+ 7X XXX XXXX",
+          "kuwait": "أدخل رقمك بأي تنسيق: 05X XXX XXXX أو 5X XXX XXXX أو 965+ 5X XXX XXXX"
+        }
       }
     },
     "buttons": {
@@ -969,14 +996,16 @@
         },
         "eventType": {
           "label": "نوع المناسبة *",
-          "placeholder": "اختر نوع المناسبة"
+          "placeholder": "اختر نوع المناسبة",
+          "error": "يرجى اختيار نوع المناسبة"
         },
         "serviceType": {
           "label": "نوع الخدمة *",
-          "placeholder": "اختر نوع الخدمة"
+          "placeholder": "اختر نوع الخدمة",
+          "error": "يرجى اختيار نوع الخدمة"
         },
         "price": {
-          "label": "السعر (دينار)",
+          "label": "السعر (دينار أردني/كويتي)",
           "placeholder": "0.00",
           "error": "يرجى إدخال سعر صحيح"
         },
@@ -995,7 +1024,8 @@
         "title": "الموقع",
         "city": {
           "label": "المدينة *",
-          "placeholder": "اختر المدينة"
+          "placeholder": "اختر المدينة",
+          "error": "يرجى اختيار مدينة"
         },
         "area": {
           "label": "المنطقة",
@@ -1008,12 +1038,14 @@
         "latitude": {
           "label": "خط العرض",
           "placeholder": "أدخل خط العرض (مثال: 31.9539)",
-          "error": "يرجى إدخال خط عرض صحيح"
+          "error": "يرجى إدخال خط عرض صحيح",
+          "description": "الإحداثيات اختيارية ولكنها تساعد العملاء في العثور على موقعك بسهولة"
         },
         "longitude": {
           "label": "خط الطول",
           "placeholder": "أدخل خط الطول (مثال: 35.9106)",
-          "error": "يرجى إدخال خط طول صحيح"
+          "error": "يرجى إدخال خط طول صحيح",
+          "description": "الإحداثيات اختيارية ولكنها تساعد العملاء في العثور على موقعك بسهولة"
         }
       },
       "dates": {

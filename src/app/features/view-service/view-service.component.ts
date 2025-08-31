@@ -5,13 +5,15 @@ import { EventItemService } from '../../core/services/event-item.service';
 import { EventItem } from '../../core/models/event-item.model';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { NotificationService } from '../../core/services/notification.service';
-import { NotificationToastComponent } from '../../shared/components/notification-toast/notification-toast.component';
-import { isContactOnlyService, getServiceIconClass } from '../../core/models/constants/categories.const';
+import {
+  isContactOnlyService,
+  getServiceIconClass,
+} from '../../core/models/constants/categories.const';
 
 @Component({
   selector: 'app-view-service',
   standalone: true,
-  imports: [CommonModule, RouterModule, TranslateModule, NotificationToastComponent],
+  imports: [CommonModule, RouterModule, TranslateModule],
   templateUrl: './view-service.component.html',
   styleUrls: ['./view-service.component.css'],
 })
@@ -59,11 +61,7 @@ export class ViewServiceComponent implements OnInit {
   deleteService() {
     if (!this.service?._id) return;
 
-    if (
-      confirm(
-        this.translate.instant('viewService.delete.confirmation')
-      )
-    ) {
+    if (confirm(this.translate.instant('viewService.delete.confirmation'))) {
       this.eventItemService.deleteEventItem(this.service._id).subscribe({
         next: () => {
           this.notificationService.success(
@@ -99,7 +97,10 @@ export class ViewServiceComponent implements OnInit {
 
   isContactOnlyService(): boolean {
     if (!this.service) return false;
-    return isContactOnlyService(this.service.category, this.service.subcategory);
+    return isContactOnlyService(
+      this.service.category,
+      this.service.subcategory
+    );
   }
 
   getServiceIconClass(): string {

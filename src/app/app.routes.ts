@@ -79,13 +79,7 @@ export const routes: Routes = [
       //     ),
       //   title: 'Add New Service'
       // }
-      {
-        path: 'supplier/add-service-eng',
-        loadComponent: () =>
-          import('./features/add-service-eng/add-service-eng.component').then(
-            (m) => m.AddServiceComponent
-          ),
-      },
+
       {
         path: 'supplier/add-service',
         loadComponent: () =>
@@ -122,7 +116,10 @@ export const routes: Routes = [
       },
       {
         path: 'all-services',
-        loadComponent: () => import('./features/all-services/all-services.component').then(m => m.AllServicesComponent),
+        loadComponent: () =>
+          import('./features/all-services/all-services.component').then(
+            (m) => m.AllServicesComponent
+          ),
       },
       {
         path: '',

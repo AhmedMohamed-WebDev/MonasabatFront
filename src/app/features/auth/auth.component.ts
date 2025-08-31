@@ -70,9 +70,15 @@ export class AuthComponent implements OnInit {
       return;
     }
 
-    // Updated Jordan phone number validation
+    // Phone number validation for Jordan and Kuwait
     const jordanPhoneRegex = /^(\+962|962|0)?7[789]\d{7}$/;
-    if (!jordanPhoneRegex.test(this.phone.replace(/[\s\-\(\)]/g, ''))) {
+    const kuwaitPhoneRegex = /^(\+965|965|0)?[569]\d{7}$/;
+
+    const cleanedPhone = this.phone.replace(/[\s\-\(\)]/g, '');
+    if (
+      !jordanPhoneRegex.test(cleanedPhone) &&
+      !kuwaitPhoneRegex.test(cleanedPhone)
+    ) {
       this.error = this.translate.instant('auth.validation.phoneInvalid');
       return;
     }

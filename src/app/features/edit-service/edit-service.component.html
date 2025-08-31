@@ -100,6 +100,16 @@
             <!-- Location Section -->
             <div class="border-top pt-4 mb-4">
               <h5 class="text-dark fw-bold mb-3">المكان</h5>
+
+              <!-- Map Picker -->
+              <div class="mb-4">
+                <label class="form-label fw-semibold text-dark">تحديد الموقع على الخريطة</label>
+                <app-map-picker [initialLocation]="initialMapLocation" (locationSelected)="onLocationSelected($event)"
+                  (locationCleared)="onLocationCleared()">
+                </app-map-picker>
+              </div>
+
+              <!-- Manual Location Inputs -->
               <div class="row g-3">
                 <div class="col-md-6">
                   <label class="form-label fw-semibold text-dark">المدينة</label>
@@ -116,13 +126,15 @@
                 <div class="col-md-6">
                   <label class="form-label fw-semibold text-dark">خط العرض (Latitude)</label>
                   <input type="number" class="form-control form-control-lg" formControlName="lat" placeholder="31.9566"
-                    step="any">
+                    step="any" readonly>
+                  <small class="text-muted">سيتم ملؤها تلقائياً من الخريطة</small>
                 </div>
 
                 <div class="col-md-6">
                   <label class="form-label fw-semibold text-dark">خط الطول (Longitude)</label>
                   <input type="number" class="form-control form-control-lg" formControlName="lng" placeholder="35.9457"
-                    step="any">
+                    step="any" readonly>
+                  <small class="text-muted">سيتم ملؤها تلقائياً من الخريطة</small>
                 </div>
               </div>
             </div>

@@ -48,7 +48,7 @@
             </span>
           </button>
 
-          <button class="btn btn-primary me-2 mb-2 mb-md-0" [routerLink]="['/supplier/add-service-eng']">
+          <button class="btn btn-primary me-2 mb-2 mb-md-0" [routerLink]="['/supplier/add-service']">
             <i class="fas fa-plus me-2"></i>{{ 'supplierDashboard.buttons.addService' | translate }}
           </button>
           <button class="btn btn-outline-danger" (click)="logout()">
@@ -155,7 +155,7 @@
         </div>
         <h3>{{ 'supplierDashboard.bookings.empty.title' | translate }}</h3>
         <p>{{ 'supplierDashboard.bookings.empty.description' | translate }}</p>
-        <button class="btn btn-primary" [routerLink]="['/supplier/add-service-eng']">
+        <button class="btn btn-primary" [routerLink]="['/supplier/add-service']">
           {{ 'supplierDashboard.bookings.empty.addService' | translate }}
         </button>
       </div>

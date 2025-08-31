@@ -7,7 +7,14 @@
         <button type="button" class="btn btn-link text-decoration-none p-0 me-3" (click)="goBack()">
           <i class="fas fa-arrow-right text-primary fs-5"></i>
         </button>
-        <h2 class="mb-0 text-dark fw-bold">إضافة خدمة جديدة</h2>
+        <h2 class="mb-0 text-dark fw-bold">{{ 'addService.header.title' | translate }}</h2>
+      </div>
+
+      <!-- Contact-Only Service Notice -->
+      <div *ngIf="isContactOnlyService()" class="alert alert-info mb-4">
+        <i class="fas fa-info-circle me-2"></i>
+        <strong>{{ 'addService.form.contactOnly.notice' | translate }}</strong>
+        <p class="mb-0 mt-2">{{ 'addService.form.contactOnly.description' | translate }}</p>
       </div>
 
       <!-- Form Card -->
@@ -18,100 +25,167 @@
             <!-- Service Basic Info -->
             <div class="row g-3 mb-4">
               <div class="col-12">
-                <label class="form-label fw-semibold text-dark">اسم الخدمة *</label>
-                <input type="text" class="form-control form-control-lg" [class.is-invalid]="isFieldInvalid('name')"
-                  formControlName="name" placeholder="أدخل اسم الخدمة">
+                <label class="form-label fw-semibold text-dark">
+                  {{ 'addService.form.basicInfo.serviceName.label' | translate }}
+                </label>
+                <input type="text" class="form-control form-control-lg"
+                  [placeholder]="'addService.form.basicInfo.serviceName.placeholder' | translate"
+                  [class.is-invalid]="isFieldInvalid('name')" formControlName="name">
                 <div class="invalid-feedback" *ngIf="isFieldInvalid('name')">
                   {{ getFieldError('name') }}
                 </div>
               </div>
 
               <div class="col-12">
-                <label class="form-label fw-semibold text-dark">الوصف</label>
+                <label class="form-label fw-semibold text-dark">
+                  {{ 'addService.form.basicInfo.description.label' | translate }}
+                </label>
                 <textarea class="form-control" rows="3" formControlName="description"
-                  placeholder="وصف تفصيلي للخدمة..."></textarea>
+                  [placeholder]="'addService.form.basicInfo.description.placeholder' | translate"></textarea>
               </div>
 
-              <div class="col-md-6">
-                <label class="form-label fw-semibold text-dark">الفئة *</label>
-                <select class="form-select form-select-lg" [class.is-invalid]="isFieldInvalid('category')"
-                  formControlName="category">
-                  <option value="">اختر الفئة</option>
-                  <option *ngFor="let cat of categories" [value]="cat.value">
-                    {{ cat.label }}
-                  </option>
-                </select>
-                <div class="invalid-feedback" *ngIf="isFieldInvalid('category')">
-                  {{ getFieldError('category') }}
+              <!-- Category and Subcategory Section -->
+              <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold text-dark">
+                    {{ 'addService.form.basicInfo.eventType.label' | translate }}
+                  </label>
+                  <select class="form-select form-select-lg" formControlName="category"
+                    [class.is-invalid]="isFieldInvalid('category')" (change)="onCategoryChange($event)">
+                    <option value="">{{ 'addService.form.basicInfo.eventType.placeholder' | translate }}</option>
+                    <option *ngFor="let cat of translatedCategories" [value]="cat.value">
+                      {{cat.label}}
+                    </option>
+                  </select>
+                  <div class="invalid-feedback" *ngIf="isFieldInvalid('category')">
+                    {{ 'addService.form.basicInfo.eventType.error' | translate }}
+                  </div>
+                </div>
+
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold text-dark">
+                    {{ 'addService.form.basicInfo.serviceType.label' | translate }}
+                  </label>
+                  <select class="form-select form-select-lg" formControlName="subcategory"
+                    [class.is-invalid]="isFieldInvalid('subcategory')">
+                    <option value="">{{ 'addService.form.basicInfo.serviceType.placeholder' | translate }}</option>
+                    <option *ngFor="let sub of subcategories" [value]="sub.value">
+                      {{sub.label}}
+                    </option>
+                  </select>
+                  <div class="invalid-feedback" *ngIf="isFieldInvalid('subcategory')">
+                    {{ 'addService.form.basicInfo.serviceType.error' | translate }}
+                  </div>
                 </div>
               </div>
 
-              <div class="col-md-6">
-                <label class="form-label fw-semibold text-dark">الفئة الفرعية</label>
-                <input type="text" class="form-control form-control-lg" formControlName="subcategory"
-                  placeholder="فئة فرعية (اختيارية)">
-              </div>
-
+              <!-- Price input -->
               <div class="col-md-4">
-                <label class="form-label fw-semibold text-dark">السعر (دينار) *</label>
+                <label class="form-label fw-semibold text-dark">
+                  {{ 'addService.form.basicInfo.price.label' | translate }}
+                </label>
                 <input type="number" class="form-control form-control-lg" [class.is-invalid]="isFieldInvalid('price')"
-                  formControlName="price" placeholder="0.00" min="1" step="0.01">
+                  formControlName="price" [placeholder]="'addService.form.basicInfo.price.placeholder' | translate"
+                  min="1" step="0.01">
                 <div class="invalid-feedback" *ngIf="isFieldInvalid('price')">
-                  {{ getFieldError('price') }}
+                  {{ 'addService.form.basicInfo.price.error' | translate }}
+                </div>
+              </div>
+
+              <!-- Capacity inputs -->
+              <div class="col-md-4">
+                <label class="form-label fw-semibold text-dark">
+                  {{ 'addService.form.basicInfo.minCapacity.label' | translate }}
+                </label>
+                <input type="number" class="form-control form-control-lg" formControlName="minCapacity"
+                  [placeholder]="'addService.form.basicInfo.minCapacity.placeholder' | translate" min="1">
+                <div class="invalid-feedback" *ngIf="isFieldInvalid('minCapacity')">
+                  {{ 'addService.form.basicInfo.minCapacity.error' | translate }}
                 </div>
               </div>
 
               <div class="col-md-4">
-                <label class="form-label fw-semibold text-dark">الحد الأدنى للعدد</label>
-                <input type="number" class="form-control form-control-lg" formControlName="minCapacity"
-                  placeholder="مثلاً: 10" min="1">
-              </div>
-
-              <div class="col-md-4">
-                <label class="form-label fw-semibold text-dark">الحد الأقصى للعدد</label>
+                <label class="form-label fw-semibold text-dark">
+                  {{ 'addService.form.basicInfo.maxCapacity.label' | translate }}
+                </label>
                 <input type="number" class="form-control form-control-lg" formControlName="maxCapacity"
-                  placeholder="مثلاً: 100" min="1">
+                  [placeholder]="'addService.form.basicInfo.maxCapacity.placeholder' | translate" min="1">
+                <div class="invalid-feedback" *ngIf="isFieldInvalid('maxCapacity')">
+                  {{ 'addService.form.basicInfo.maxCapacity.error' | translate }}
+                </div>
               </div>
             </div>
 
             <!-- Location Section -->
             <div class="border-top pt-4 mb-4">
-              <h5 class="text-dark fw-bold mb-3">المكان</h5>
+              <h5 class="text-dark fw-bold mb-3">
+                {{ 'addService.form.location.title' | translate }}
+              </h5>
+
+              <!-- Map Picker -->
+              <div class="mb-4">
+                <label class="form-label fw-semibold text-dark">تحديد الموقع على الخريطة</label>
+                <app-map-picker [initialLocation]="initialMapLocation" (locationSelected)="onLocationSelected($event)"
+                  (locationCleared)="onLocationCleared()">
+                </app-map-picker>
+              </div>
+
+              <!-- Manual Location Inputs -->
               <div class="row g-3">
                 <div class="col-md-6">
-                  <label class="form-label fw-semibold text-dark">المدينة</label>
-                  <input type="text" class="form-control form-control-lg" formControlName="city"
-                    placeholder="مثلاً: عمان">
+                  <label class="form-label fw-semibold text-dark">
+                    {{ 'addService.form.location.city.label' | translate }}
+                  </label>
+                  <select class="form-select form-select-lg" formControlName="city"
+                    [class.is-invalid]="isFieldInvalid('city')">
+                    <option value="">{{ 'addService.form.location.city.placeholder' | translate }}</option>
+                    <option *ngFor="let city of translatedCities" [value]="city.value">
+                      {{city.label}}
+                    </option>
+                  </select>
+                  <div class="invalid-feedback" *ngIf="isFieldInvalid('city')">
+                    {{ 'addService.form.location.city.error' | translate }}
+                  </div>
                 </div>
 
                 <div class="col-md-6">
-                  <label class="form-label fw-semibold text-dark">المنطقة</label>
+                  <label class="form-label fw-semibold text-dark">
+                    {{ 'addService.form.location.area.label' | translate }}
+                  </label>
                   <input type="text" class="form-control form-control-lg" formControlName="area"
-                    placeholder="مثلاً: الدوار السابع">
+                    [placeholder]="'addService.form.location.area.placeholder' | translate">
                 </div>
 
                 <div class="col-md-6">
                   <label class="form-label fw-semibold text-dark">خط العرض (Latitude)</label>
                   <input type="number" class="form-control form-control-lg" formControlName="lat" placeholder="31.9566"
-                    step="any">
+                    step="any" readonly>
+                  <small class="text-muted">{{ 'addService.form.location.latitude.description' | translate }}</small>
                 </div>
 
                 <div class="col-md-6">
                   <label class="form-label fw-semibold text-dark">خط الطول (Longitude)</label>
                   <input type="number" class="form-control form-control-lg" formControlName="lng" placeholder="35.9457"
-                    step="any">
+                    step="any" readonly>
+                  <small class="text-muted">{{ 'addService.form.location.longitude.description' | translate }}</small>
                 </div>
               </div>
             </div>
 
             <!-- Available Dates Section -->
             <div class="border-top pt-4 mb-4">
-              <h5 class="text-dark fw-bold mb-3">التواريخ المتاحة</h5>
+              <h5 class="text-dark fw-bold mb-3">
+                {{ 'addService.form.availability.title' | translate }}
+              </h5>
               <div class="row g-3">
                 <div class="col-md-6">
                   <input type="date" class="form-control form-control-lg" (change)="addAvailableDate($event)"
-                    placeholder="اختر تاريخ">
+                    [placeholder]="'addService.form.availability.datePlaceholder' | translate">
                 </div>
+              </div>
+
+              <div *ngIf="availableDates.length === 0" class="text-muted mt-2">
+                {{ 'addService.form.availability.noDateSelected' | translate }}
               </div>
 
               <div *ngIf="availableDates.length > 0" class="mt-3">
@@ -127,11 +201,15 @@
 
             <!-- Media Upload Section -->
             <div class="border-top pt-4 mb-4">
-              <h5 class="text-dark fw-bold mb-3">الصور والفيديوهات</h5>
+              <h5 class="text-dark fw-bold mb-3">
+                {{ 'addService.form.media.title' | translate }}
+              </h5>
 
               <!-- Images Upload -->
               <div class="mb-3">
-                <label class="form-label fw-semibold text-dark">الصور (حتى 5 صور)</label>
+                <label class="form-label fw-semibold text-dark">
+                  {{ 'addService.form.media.images.label' | translate }}
+                </label>
                 <input type="file" class="form-control form-control-lg" multiple accept="image/*"
                   (change)="onImageSelect($event)">
 
@@ -156,7 +234,9 @@
 
               <!-- Videos Upload -->
               <div class="mb-3">
-                <label class="form-label fw-semibold text-dark">الفيديوهات (حتى 3 فيديوهات)</label>
+                <label class="form-label fw-semibold text-dark">
+                  {{ 'addService.form.media.videos.label' | translate }}
+                </label>
                 <input type="file" class="form-control form-control-lg" multiple accept="video/*"
                   (change)="onVideoSelect($event)">
 
@@ -183,14 +263,22 @@
             <!-- Submit Buttons -->
             <div class="d-flex justify-content-end gap-2 mt-4">
               <button type="button" class="btn btn-outline-secondary btn-lg px-4" (click)="goBack()"
-                [disabled]="isLoading || isUploading">
-                إلغاء
+                [disabled]="isLoading || isUploading || isSubmitting">
+                {{ 'addService.form.buttons.cancel' | translate }}
               </button>
-              <button type="submit" class="btn btn-warning btn-lg px-4" [disabled]="isLoading || isUploading">
-                <span *ngIf="isLoading || isUploading" class="spinner-border spinner-border-sm me-2"></span>
-                <span *ngIf="isLoading">جاري الحفظ...</span>
-                <span *ngIf="isUploading">جاري رفع الملفات...</span>
-                <span *ngIf="!isLoading && !isUploading">إضافة الخدمة</span>
+              <button type="submit" class="btn btn-warning btn-lg px-4"
+                [disabled]="isLoading || isUploading || isSubmitting">
+                <span *ngIf="isLoading || isUploading || isSubmitting"
+                  class="spinner-border spinner-border-sm me-2"></span>
+                <span *ngIf="isSubmitting">
+                  {{ 'addService.form.buttons.saving' | translate }}
+                </span>
+                <span *ngIf="isUploading">
+                  {{ 'addService.form.buttons.uploading' | translate }}
+                </span>
+                <span *ngIf="!isLoading && !isUploading && !isSubmitting">
+                  {{ 'addService.form.buttons.submit' | translate }}
+                </span>
               </button>
             </div>
 

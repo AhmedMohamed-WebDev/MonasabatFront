@@ -71,6 +71,7 @@ export class SearchResultComponent implements OnInit {
   eventCategories: CategoryConfig[] = [];
   peopleRanges: PeopleRange[] = [];
   cities = [
+    // Jordan cities
     'Amman',
     'Irbid',
     'Zarqa',
@@ -79,6 +80,15 @@ export class SearchResultComponent implements OnInit {
     'Madaba',
     'Karak',
     'Tafilah',
+    // Kuwait cities
+    'Kuwait City',
+    'Ahmadi',
+    'Hawalli',
+    'Jahra',
+    'Farwaniya',
+    'Mubarak Al-Kabeer',
+    'Salmiya',
+    'Fahaheel',
   ];
   translatedCities: TranslatedCity[] = [];
 
@@ -153,10 +163,44 @@ export class SearchResultComponent implements OnInit {
   private updateLookups() {
     this.eventCategories = this.translationService.getTranslatedCategories();
     this.peopleRanges = this.translationService.getTranslatedPeopleRanges();
-    this.translatedCities = this.cities.map((city) => ({
-      original: city,
-      translated: this.translate.instant(`cities.${city.toLowerCase()}`),
-    }));
+    this.translatedCities = this.cities.map((city) => {
+      let translationKey = '';
+
+      // Map city names to translation keys
+      switch (city) {
+        case 'Amman':
+        case 'Irbid':
+        case 'Zarqa':
+        case 'Aqaba':
+        case 'Salt':
+        case 'Madaba':
+        case 'Karak':
+        case 'Tafilah':
+          translationKey = `cities.jordan.${city.toLowerCase()}`;
+          break;
+        case 'Kuwait City':
+          translationKey = 'cities.kuwait.kuwait_city';
+          break;
+        case 'Ahmadi':
+        case 'Hawalli':
+        case 'Jahra':
+        case 'Farwaniya':
+        case 'Mubarak Al-Kabeer':
+        case 'Salmiya':
+        case 'Fahaheel':
+          translationKey = `cities.kuwait.${city
+            .toLowerCase()
+            .replace(/[\s\-]/g, '_')}`;
+          break;
+        default:
+          translationKey = `cities.jordan.${city.toLowerCase()}`;
+      }
+
+      return {
+        original: city,
+        translated: this.translate.instant(translationKey),
+      };
+    });
   }
 
   private navigateWith(paramsPatch: any) {

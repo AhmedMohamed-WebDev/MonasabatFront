@@ -13,16 +13,27 @@ import {
   EventItem,
   UpdateEventItemRequest,
 } from '../../core/models/event-item.model';
-import { EVENT_CATEGORIES, isContactOnlyService } from '../../core/models/constants/categories.const';
+import {
+  EVENT_CATEGORIES,
+  isContactOnlyService,
+} from '../../core/models/constants/categories.const';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { TranslationService } from '../../core/services/translation.service';
 import { NotificationService } from '../../core/services/notification.service';
-import { NotificationToastComponent } from '../../shared/components/notification-toast/notification-toast.component';
+import {
+  MapPickerComponent,
+  MapLocation,
+} from '../../shared/components/map-picker/map-picker.component';
 
 @Component({
   selector: 'app-edit-service',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, TranslateModule, NotificationToastComponent],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    TranslateModule,
+    MapPickerComponent,
+  ],
   templateUrl: './edit-service.component.html',
   styleUrls: ['./edit-service.component.css'],
 })
@@ -37,6 +48,7 @@ export class EditServiceComponent implements OnInit {
   existingVideos: string[] = [];
   availableDates: string[] = [];
   serviceId!: string;
+  initialMapLocation?: MapLocation;
 
   categories = EVENT_CATEGORIES;
   subcategories: { value: string; label: string }[] = [];
@@ -101,11 +113,22 @@ export class EditServiceComponent implements OnInit {
       price: service.price,
       city: service.location?.city || '',
       area: service.location?.area || '',
-      // lat: service.location?.coordinates?.lat || '',
-      // lng: service.location?.coordinates?.lng || '',
+      lat: service.location?.coordinates?.lat || '',
+      lng: service.location?.coordinates?.lng || '',
       minCapacity: service.minCapacity || '',
       maxCapacity: service.maxCapacity || '',
     });
+
+    // Set initial map location if coordinates exist
+    if (
+      service.location?.coordinates?.lat &&
+      service.location?.coordinates?.lng
+    ) {
+      this.initialMapLocation = {
+        lat: service.location.coordinates.lat,
+        lng: service.location.coordinates.lng,
+      };
+    }
 
     // Set existing media
     this.existingImages = service.images || [];
@@ -338,6 +361,20 @@ export class EditServiceComponent implements OnInit {
         });
     }
     return '';
+  }
+
+  onLocationSelected(location: MapLocation): void {
+    this.serviceForm.patchValue({
+      lat: location.lat,
+      lng: location.lng,
+    });
+  }
+
+  onLocationCleared(): void {
+    this.serviceForm.patchValue({
+      lat: '',
+      lng: '',
+    });
   }
 
   goBack(): void {

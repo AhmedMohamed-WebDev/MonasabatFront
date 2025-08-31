@@ -5,6 +5,9 @@ import {
   FormBuilder,
   FormGroup,
   Validators,
+  ValidatorFn,
+  AbstractControl,
+  ValidationErrors,
 } from '@angular/forms';
 import { JoinService } from '../../core/services/join.service';
 import { AuthService } from '../../core/services/auth.service';
@@ -30,16 +33,28 @@ export class JoinComponent {
   showError = false;
   errorMessage = '';
 
-  cities = [
-    { value: 'Amman', label: 'Amman' },
-    { value: 'Irbid', label: 'Irbid' },
-    { value: 'Zarqa', label: 'Zarqa' },
-    { value: 'Aqaba', label: 'Aqaba' },
-    { value: 'Salt', label: 'Salt' },
-    { value: 'Madaba', label: 'Madaba' },
-    { value: 'Karak', label: 'Karak' },
-    { value: 'Tafilah', label: 'Tafilah' },
-  ];
+  cities = {
+    jordan: [
+      { value: 'Amman', label: 'Amman' },
+      { value: 'Irbid', label: 'Irbid' },
+      { value: 'Zarqa', label: 'Zarqa' },
+      { value: 'Aqaba', label: 'Aqaba' },
+      { value: 'Salt', label: 'Salt' },
+      { value: 'Madaba', label: 'Madaba' },
+      { value: 'Karak', label: 'Karak' },
+      { value: 'Tafilah', label: 'Tafilah' },
+    ],
+    kuwait: [
+      { value: 'Kuwait_City', label: 'Kuwait City' },
+      { value: 'Ahmadi', label: 'Ahmadi' },
+      { value: 'Hawalli', label: 'Hawalli' },
+      { value: 'Jahra', label: 'Jahra' },
+      { value: 'Fahaheel', label: 'Fahaheel' },
+      { value: 'Mubarak_Al_Kabeer', label: 'Mubarak Al-Kabeer' },
+      { value: 'Salmiya', label: 'Salmiya' },
+      { value: 'Farwaniya', label: 'Farwaniya' },
+    ],
+  };
 
   serviceTypes = [
     { value: 'Hall', label: 'Hall' },
@@ -64,15 +79,8 @@ export class JoinComponent {
   ) {
     this.joinForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(2)]],
-      phone: [
-        '',
-        [
-          Validators.required,
-          Validators.pattern(
-            /^((?:(?:\+962|0)(?:7(?:7|8|9)))|(?:7(?:7|8|9)))\d{7}$/
-          ),
-        ],
-      ],
+      phoneCountry: ['jordan', Validators.required],
+      phone: ['', [Validators.required, this.phoneValidator()]],
       city: ['', Validators.required],
       serviceType: ['', Validators.required],
       otherServiceType: [''],
@@ -91,6 +99,11 @@ export class JoinComponent {
       }
       this.joinForm.get('otherServiceType')?.updateValueAndValidity();
     });
+
+    // Watch for phone country changes to update phone validation
+    this.joinForm.get('phoneCountry')?.valueChanges.subscribe(() => {
+      this.joinForm.get('phone')?.updateValueAndValidity();
+    });
   }
 
   onSubmit() {
@@ -98,7 +111,13 @@ export class JoinComponent {
       this.isSubmitting = true;
       this.hideAlerts();
 
-      this.joinService.submitJoinRequest(this.joinForm.value).subscribe({
+      // Get form values and explicitly include phoneCountry
+      const formData = {
+        ...this.joinForm.value,
+        phoneCountry: this.joinForm.get('phoneCountry')?.value || 'jordan',
+      };
+
+      this.joinService.submitJoinRequest(formData).subscribe({
         next: (response) => {
           this.showSuccess = true;
           this.joinForm.reset();
@@ -135,7 +154,10 @@ export class JoinComponent {
         });
       }
       if (field.errors['pattern']) {
-        return this.translate.instant('join.form.validation.phoneInvalid');
+        const country = this.joinForm.get('phoneCountry')?.value || 'jordan';
+        return this.translate.instant(
+          `join.form.validation.phoneInvalid.${country}`
+        );
       }
     }
     return '';
@@ -167,6 +189,29 @@ export class JoinComponent {
         },
       });
     }
+  }
+
+  phoneValidator(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      if (!control.value) {
+        return null;
+      }
+
+      const country = this.joinForm?.get('phoneCountry')?.value;
+
+      // Jordan phone validation
+      const jordanRegex =
+        /^((?:(?:\+962|0)(?:7(?:7|8|9)))|(?:7(?:7|8|9)))\d{7}$/;
+      // Kuwait phone validation (accepts numbers starting with +965 or 5/6/9 followed by 7 digits)
+      const kuwaitRegex = /^((?:(?:\+965|0)(?:5|6|9))|(?:5|6|9))\d{7}$/;
+
+      const isValid =
+        country === 'jordan'
+          ? jordanRegex.test(control.value)
+          : kuwaitRegex.test(control.value);
+
+      return isValid ? null : { pattern: true };
+    };
   }
 
   showPendingMessage() {
