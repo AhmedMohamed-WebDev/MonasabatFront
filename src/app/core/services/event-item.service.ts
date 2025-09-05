@@ -69,4 +69,53 @@ export class EventItemService {
       }
     );
   }
+  // isDateAvailable(event: EventItem, date: Date): boolean {
+  //   const checkDate = new Date(date);
+  //   const fromDate = new Date(event.availability.dateRange.from);
+  //   const toDate = new Date(event.availability.dateRange.to);
+
+  //   // Check if date is within range
+  //   if (checkDate < fromDate || checkDate > toDate) return false;
+
+  //   // Check if date is not in excluded dates
+  //   if (
+  //     event.availability.excludedDates?.some(
+  //       (excluded) =>
+  //         new Date(excluded).toDateString() === checkDate.toDateString()
+  //     )
+  //   ) {
+  //     return false;
+  //   }
+
+  //   return true;
+  // }
+  isDateAvailable(event: EventItem, date: Date): boolean {
+    if (!event) return false;
+
+    const checkDate = new Date(date);
+
+    // If using legacy availableDates array
+    if (!event.availability?.dateRange) {
+      return (
+        event.availableDates?.some(
+          (d) => new Date(d).toDateString() === checkDate.toDateString()
+        ) ?? false
+      );
+    }
+
+    // Check new date range system
+    const fromDate = new Date(event.availability.dateRange.from);
+    const toDate = new Date(event.availability.dateRange.to);
+
+    // Check if date is within range
+    if (checkDate < fromDate || checkDate > toDate) {
+      return false;
+    }
+
+    // Check if date is not in excluded dates
+    return !event.availability.excludedDates?.some(
+      (excluded) =>
+        new Date(excluded).toDateString() === checkDate.toDateString()
+    );
+  }
 }

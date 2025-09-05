@@ -72,6 +72,8 @@ export class AddServiceComponent implements OnInit {
   // Translated data
   translatedCategories: CategoryConfig[] = [];
   translatedCities: { value: string; label: string }[] = [];
+  today = new Date().toISOString().split('T')[0]; // For min date validation
+  excludedDates: string[] = []; // To store excluded dates
 
   constructor(
     private fb: FormBuilder,
@@ -157,6 +159,61 @@ export class AddServiceComponent implements OnInit {
       }));
     }
   }
+  addExcludedDate(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const selectedDate = input.value;
+
+    if (!selectedDate) return;
+
+    const fromDate = this.serviceForm.get('availability.dateRange.from')?.value;
+    const toDate = this.serviceForm.get('availability.dateRange.to')?.value;
+
+    if (!fromDate || !toDate) {
+      this.notificationService.warning(
+        this.translate.instant('addService.form.availability.selectDateRange'),
+        'Warning'
+      );
+      return;
+    }
+
+    // Check if date is within range
+    if (selectedDate < fromDate || selectedDate > toDate) {
+      this.notificationService.warning(
+        this.translate.instant('addService.form.availability.dateOutOfRange'),
+        'Warning'
+      );
+      return;
+    }
+
+    // Check if date already exists
+    if (this.excludedDates.includes(selectedDate)) {
+      this.notificationService.warning(
+        this.translate.instant(
+          'addService.form.availability.dateAlreadyExcluded'
+        ),
+        'Warning'
+      );
+      return;
+    }
+
+    this.excludedDates.push(selectedDate);
+    const excludedDatesArray = this.serviceForm.get(
+      'availability.excludedDates'
+    ) as FormArray;
+    excludedDatesArray.push(this.fb.control(selectedDate));
+
+    // Clear the input
+    (event.target as HTMLInputElement).value = '';
+  }
+
+  // Method to remove excluded date
+  removeExcludedDate(index: number): void {
+    this.excludedDates.splice(index, 1);
+    const excludedDatesArray = this.serviceForm.get(
+      'availability.excludedDates'
+    ) as FormArray;
+    excludedDatesArray.removeAt(index);
+  }
 
   private initForm(): void {
     this.availableDatesArray = this.fb.array([]);
@@ -174,9 +231,24 @@ export class AddServiceComponent implements OnInit {
       minCapacity: [''],
       maxCapacity: [''],
       availableDates: this.availableDatesArray,
+      availability: this.fb.group({
+        dateRange: this.fb.group({
+          from: ['', Validators.required],
+          to: ['', Validators.required],
+        }),
+        excludedDates: this.fb.array([]),
+      }),
     });
   }
+  validateDateRange(): boolean {
+    const dateRange = this.serviceForm.get('availability.dateRange')?.value;
+    if (!dateRange?.from || !dateRange?.to) return false;
 
+    const fromDate = new Date(dateRange.from);
+    const toDate = new Date(dateRange.to);
+
+    return fromDate <= toDate;
+  }
   private setupCategoryListener(): void {
     const categoryControl = this.serviceForm.get('category');
     if (categoryControl) {
@@ -428,6 +500,13 @@ export class AddServiceComponent implements OnInit {
         },
       },
       availableDates: this.availableDatesArray.value,
+      availability: {
+        dateRange: {
+          from: formValues.availability.dateRange.from,
+          to: formValues.availability.dateRange.to,
+        },
+        excludedDates: formValues.availability.excludedDates,
+      },
     };
 
     // Call the service to create the event item

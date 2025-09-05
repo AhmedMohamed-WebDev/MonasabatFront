@@ -16,6 +16,13 @@ export interface EventItem {
     };
   };
   availableDates: Date[];
+  availability: {
+    dateRange: {
+      from: Date;
+      to: Date;
+    };
+    excludedDates?: Date[]; // Optional: for specific dates to exclude
+  };
   supplier: {
     _id: string;
     name: string;
@@ -40,6 +47,13 @@ export interface CreateEventItemRequest {
     };
   };
   availableDates?: string[];
+  availability: {
+    dateRange: {
+      from: string;
+      to: string;
+    };
+    excludedDates?: string[];
+  };
   minCapacity?: number;
   maxCapacity?: number;
 }

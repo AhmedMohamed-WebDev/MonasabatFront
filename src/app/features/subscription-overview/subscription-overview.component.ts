@@ -181,4 +181,30 @@ export class SubscriptionOverviewComponent implements OnInit {
       });
     }
   }
+  // Add this method to the SubscriptionOverviewComponent class
+  getWarningMessage(stats: SubscriptionStats): string {
+    if (!stats.hasWarning) return '';
+
+    if (stats.warningType === 'locked') {
+      return this.translate.instant('supplier.subscription.warnings.locked');
+    }
+
+    if (stats.warningType === 'near-limit') {
+      return this.translate.instant(
+        'supplier.subscription.warnings.nearLimit',
+        {
+          current: stats.currentContacts,
+          max: stats.maxContacts,
+        }
+      );
+    }
+
+    if (stats.warningType === 'expiring' && stats.currentContacts > 0) {
+      return this.translate.instant('supplier.subscription.warnings.expiring', {
+        days: stats.daysUntilExpiry,
+      });
+    }
+
+    return '';
+  }
 }

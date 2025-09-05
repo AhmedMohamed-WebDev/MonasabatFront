@@ -37,13 +37,19 @@
       </div>
 
       <!-- Warning Messages -->
-      <div *ngIf="stats?.hasWarning" class="alert" [ngClass]="{'alert-warning': stats?.warningType === 'near-limit' || stats?.warningType === 'expiring',
+      <!-- <div *ngIf="stats?.hasWarning" class="alert" [ngClass]="{'alert-warning': stats?.warningType === 'near-limit' || stats?.warningType === 'expiring',
                       'alert-danger': stats?.warningType === 'locked'}">
         <i class="bi" [ngClass]="{'bi-exclamation-triangle': !stats?.isLocked, 
                                  'bi-lock-fill': stats?.isLocked}"></i>
         {{ 'supplier.subscription.warnings.' + (stats?.warningType || '') | translate }}
+      </div> -->
+      <!-- Replace the warning message section with: -->
+      <div *ngIf="stats?.hasWarning" class="alert" [ngClass]="{'alert-warning': stats?.warningType === 'near-limit' || stats?.warningType === 'expiring',
+                 'alert-danger': stats?.warningType === 'locked'}">
+        <i class="bi" [ngClass]="{'bi-exclamation-triangle': !stats?.isLocked, 
+                           'bi-lock-fill': stats?.isLocked}"></i>
+        {{ getWarningMessage(stats!) }}
       </div>
-
       <!-- Subscription Details -->
       <div class="row g-3">
         <div class="col-md-6">

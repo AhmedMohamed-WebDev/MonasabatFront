@@ -457,10 +457,46 @@ export class ServiceDetailComponent implements OnInit, OnDestroy {
   }
 
   // Helper method to get translated city
+  // Update the getTranslatedCity method
   getTranslatedCity(): string {
-    return this.service?.location?.city
-      ? this.translationService.getTranslatedCity(this.service.location.city)
-      : '';
+    if (!this.service?.location?.city) return '';
+
+    const city = this.service.location.city.toLowerCase();
+
+    // Check if it's a Jordanian city
+    if (
+      [
+        'amman',
+        'irbid',
+        'zarqa',
+        'aqaba',
+        'salt',
+        'madaba',
+        'karak',
+        'tafilah',
+      ].includes(city)
+    ) {
+      return this.translate.instant(`cities.jordan.${city}`);
+    }
+
+    // Check if it's a Kuwaiti city
+    if (
+      [
+        'kuwait_city',
+        'ahmadi',
+        'hawalli',
+        'jahra',
+        'farwaniya',
+        'mubarak_al_kabeer',
+        'salmiya',
+        'fahaheel',
+      ].includes(city)
+    ) {
+      return this.translate.instant(`cities.kuwait.${city}`);
+    }
+
+    // Fallback to original city name if no translation found
+    return this.service.location.city;
   }
 
   // Phone masking utility

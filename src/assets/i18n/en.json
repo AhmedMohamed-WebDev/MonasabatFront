@@ -125,7 +125,8 @@
     "mansaf-cooking": "Mansaf & Cooking",
     "tents-canopies": "Tents & Canopies",
     "zaffat": "Traditional Zaffat",
-    "entertainment-shows": "Entertainment Shows"
+    "entertainment-shows": "Entertainment Shows",
+    "wedding-arches": "Wedding Arches & Stands"
   },
   "subcategories": {
     "general": "General",
@@ -271,7 +272,10 @@
     "photography": "Photography & Video",
     "entertainment": "Entertainment",
     "equipment": "Audio/Visual Equipment",
-    "photography-documentation": "Photography & Documentation"
+    "photography-documentation": "Photography & Documentation",
+    "wedding-kosha": "Wedding Kosha",
+    "flower-stands": "Flower Stands",
+    "entrance-arches": "Entrance Arches"
   },
   "serviceDetails": {
     "loading": {
@@ -965,11 +969,16 @@
         "description": "This service type requires direct contact with the supplier. Customers will not be able to book directly but can send contact requests."
       },
       "availability": {
-        "title": "Available Dates",
-        "datePlaceholder": "Select date",
-        "addButton": "Add Date",
-        "noDateSelected": "No dates selected yet",
-        "dateExists": "This date is already added"
+        "title": "Service Availability",
+        "fromDate": "Available From",
+        "toDate": "Available Until",
+        "excludedDates": "Exclude Specific Dates",
+        "excludedDatesHint": "Select dates when the service is not available",
+        "dateRangeError": "End date must be after start date",
+        "invalidRange": "Please select a valid date range",
+        "selectDateRange": "Please select date range first",
+        "dateOutOfRange": "Selected date must be within the date range",
+        "dateAlreadyExcluded": "This date is already excluded"
       },
       "basicInfo": {
         "serviceName": {

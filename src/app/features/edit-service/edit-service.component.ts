@@ -6,6 +6,7 @@ import {
   FormGroup,
   Validators,
   ReactiveFormsModule,
+  FormArray,
 } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { EventItemService } from '../../core/services/event-item.service';
@@ -53,7 +54,30 @@ export class EditServiceComponent implements OnInit {
 
   categories = EVENT_CATEGORIES;
   subcategories: { value: string; label: string }[] = [];
-
+  today = new Date().toISOString().split('T')[0];
+  excludedDates: string[] = [];
+  translatedCities: { value: string; label: string }[] = [];
+  // Add this property at the top of the class with other properties
+  cities = [
+    // Jordan cities
+    'Amman',
+    'Irbid',
+    'Zarqa',
+    'Aqaba',
+    'Salt',
+    'Madaba',
+    'Karak',
+    'Tafilah',
+    // Kuwait cities
+    'Kuwait City',
+    'Ahmadi',
+    'Hawalli',
+    'Jahra',
+    'Farwaniya',
+    'Mubarak Al-Kabeer',
+    'Salmiya',
+    'Fahaheel',
+  ];
   constructor(
     private fb: FormBuilder,
     private eventItemService: EventItemService,
@@ -69,15 +93,86 @@ export class EditServiceComponent implements OnInit {
       category: ['', Validators.required],
       subcategory: [''],
       price: ['', [Validators.required, Validators.min(1)]],
-      city: [''],
+      city: ['', Validators.required], // Add required validator for city
       area: [''],
       lat: [''],
       lng: [''],
       minCapacity: [''],
       maxCapacity: [''],
+      availability: this.fb.group({
+        dateRange: this.fb.group({
+          from: ['', Validators.required],
+          to: ['', Validators.required],
+        }),
+        excludedDates: this.fb.array([]),
+      }),
     });
   }
   translatedCategories: CategoryConfig[] = [];
+  validateDateRange(): boolean {
+    const dateRange = this.serviceForm.get('availability.dateRange')?.value;
+    if (!dateRange?.from || !dateRange?.to) return false;
+
+    const fromDate = new Date(dateRange.from);
+    const toDate = new Date(dateRange.to);
+
+    return fromDate <= toDate;
+  }
+
+  addExcludedDate(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const selectedDate = input.value;
+
+    if (!selectedDate) return;
+
+    const fromDate = this.serviceForm.get('availability.dateRange.from')?.value;
+    const toDate = this.serviceForm.get('availability.dateRange.to')?.value;
+
+    if (!fromDate || !toDate) {
+      this.notificationService.warning(
+        this.translate.instant('addService.form.availability.selectDateRange'),
+        'Warning'
+      );
+      return;
+    }
+
+    // Check if date is within range
+    if (selectedDate < fromDate || selectedDate > toDate) {
+      this.notificationService.warning(
+        this.translate.instant('addService.form.availability.dateOutOfRange'),
+        'Warning'
+      );
+      return;
+    }
+
+    // Check if date already exists
+    if (this.excludedDates.includes(selectedDate)) {
+      this.notificationService.warning(
+        this.translate.instant(
+          'addService.form.availability.dateAlreadyExcluded'
+        ),
+        'Warning'
+      );
+      return;
+    }
+
+    this.excludedDates.push(selectedDate);
+    const excludedDatesArray = this.serviceForm.get(
+      'availability.excludedDates'
+    ) as FormArray;
+    excludedDatesArray.push(this.fb.control(selectedDate));
+
+    // Clear the input
+    input.value = '';
+  }
+
+  removeExcludedDate(index: number): void {
+    this.excludedDates.splice(index, 1);
+    const excludedDatesArray = this.serviceForm.get(
+      'availability.excludedDates'
+    ) as FormArray;
+    excludedDatesArray.removeAt(index);
+  }
 
   // Add/update these methods
   private updateTranslations(): void {
@@ -90,6 +185,45 @@ export class EditServiceComponent implements OnInit {
         label: this.translate.instant(`subcategories.${sub.value}`),
       })),
     }));
+    // Update cities with translations
+    this.translatedCities = this.cities.map((city) => {
+      let translationKey = '';
+
+      // Map city names to translation keys
+      switch (city) {
+        case 'Amman':
+        case 'Irbid':
+        case 'Zarqa':
+        case 'Aqaba':
+        case 'Salt':
+        case 'Madaba':
+        case 'Karak':
+        case 'Tafilah':
+          translationKey = `cities.jordan.${city.toLowerCase()}`;
+          break;
+        case 'Kuwait City':
+          translationKey = 'cities.kuwait.kuwait_city';
+          break;
+        case 'Ahmadi':
+        case 'Hawalli':
+        case 'Jahra':
+        case 'Farwaniya':
+        case 'Mubarak Al-Kabeer':
+        case 'Salmiya':
+        case 'Fahaheel':
+          translationKey = `cities.kuwait.${city
+            .toLowerCase()
+            .replace(/[\s\-]/g, '_')}`;
+          break;
+        default:
+          translationKey = `cities.jordan.${city.toLowerCase()}`;
+      }
+
+      return {
+        value: city,
+        label: this.translate.instant(translationKey),
+      };
+    });
 
     // Update subcategories if category is selected
     const currentCategory = this.serviceForm.get('category')?.value;
@@ -102,6 +236,7 @@ export class EditServiceComponent implements OnInit {
       }
     }
   }
+
   ngOnInit(): void {
     this.serviceId = this.route.snapshot.paramMap.get('id')!;
     this.updateTranslations();
@@ -136,13 +271,14 @@ export class EditServiceComponent implements OnInit {
   }
 
   private populateForm(service: EventItem): void {
+    const cityValue = service.location?.city || '';
     this.serviceForm.patchValue({
       name: service.name,
       description: service.description || '',
       category: service.category,
       subcategory: service.subcategory || '',
       price: service.price,
-      city: service.location?.city || '',
+      city: cityValue,
       area: service.location?.area || '',
       lat: service.location?.coordinates?.lat || '',
       lng: service.location?.coordinates?.lng || '',
@@ -179,6 +315,35 @@ export class EditServiceComponent implements OnInit {
         ...sub,
         label: this.translate.instant(`subcategories.${sub.value}`),
       }));
+    }
+    // Populate availability data
+    if (service.availability?.dateRange) {
+      this.serviceForm.patchValue({
+        availability: {
+          dateRange: {
+            from: new Date(service.availability.dateRange.from)
+              .toISOString()
+              .split('T')[0],
+            to: new Date(service.availability.dateRange.to)
+              .toISOString()
+              .split('T')[0],
+          },
+        },
+      });
+
+      // Populate excluded dates
+      if (service.availability.excludedDates) {
+        this.excludedDates = service.availability.excludedDates.map(
+          (date) => new Date(date).toISOString().split('T')[0]
+        );
+
+        const excludedDatesArray = this.serviceForm.get(
+          'availability.excludedDates'
+        ) as FormArray;
+        this.excludedDates.forEach((date) => {
+          excludedDatesArray.push(this.fb.control(date));
+        });
+      }
     }
   }
 
@@ -286,6 +451,13 @@ export class EditServiceComponent implements OnInit {
           },
         },
         availableDates: this.availableDates,
+        availability: {
+          dateRange: {
+            from: formValue.availability.dateRange.from,
+            to: formValue.availability.dateRange.to,
+          },
+          excludedDates: formValue.availability.excludedDates,
+        },
         minCapacity: formValue.minCapacity
           ? Number(formValue.minCapacity)
           : undefined,

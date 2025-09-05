@@ -351,6 +351,24 @@ export const EVENT_CATEGORIES: CategoryConfig[] = [
       { value: 'transport', label: 'Transportation Services' },
     ],
   },
+  {
+    value: 'wedding-arches',
+    label: 'Wedding Arches & Stands',
+    subcategories: [
+      {
+        value: 'wedding-kosha',
+        label: 'Wedding Kosha',
+      },
+      {
+        value: 'flower-stands',
+        label: 'Flower Stands',
+      },
+      {
+        value: 'entrance-arches',
+        label: 'Entrance Arches',
+      },
+    ],
+  },
 ];
 
 // Helper function to check if a service should be contact-only
@@ -448,6 +466,7 @@ export const CLIENT_MAIN_CATEGORIES: string[] = [
   'tents-canopies',
   'zaffat',
   'entertainment-shows',
+  'wedding-arches',
 ];
 
 // Icon mapping for display on service cards (Font Awesome classes)
@@ -483,6 +502,7 @@ const SUBCATEGORY_ICON_MAP: { [key: string]: string } = {
   'farm-decoration': 'fas fa-brush',
   'farm-photography': 'fas fa-camera',
   matbaqeat: 'fas fa-concierge-bell',
+  'wedding-arches': 'fas fa-archway',
 };
 
 const CATEGORY_ICON_MAP: { [key: string]: string } = {
@@ -513,6 +533,7 @@ const CATEGORY_ICON_MAP: { [key: string]: string } = {
   'tents-canopies': 'fas fa-campground',
   zaffat: 'fas fa-drum',
   'entertainment-shows': 'fas fa-theater-masks',
+  'wedding-arches': 'fas fa-archway',
 };
 
 export function getServiceIconClass(

@@ -52,7 +52,7 @@
         <!-- Image Gallery -->
         <div class="image-gallery-section">
           <div class="main-image" (click)="openImageModal()">
-            <img [src]="service.images?.[currentImageIndex] || '/public/placeholder-image.jpg'" [alt]="service.name"
+            <img [src]="service.images?.[currentImageIndex] || 'assets/placeholder.png'" [alt]="service.name"
               class="main-image-img">
             <div class="image-overlay">
               <button class="btn btn-light btn-sm">
@@ -106,6 +106,11 @@
           <div class="location-section">
             <h3 class="section-title">📍 {{ 'serviceDetails.location.title' | translate }}</h3>
             <div class="location-info">
+              <!-- <p class="location-text">
+                <strong>{{ getTranslatedCity() }}</strong>
+                <span *ngIf="service.location.area">, {{service.location.area}}</span>
+              </p> -->
+              <!-- Replace the existing location text with: -->
               <p class="location-text">
                 <strong>{{ getTranslatedCity() }}</strong>
                 <span *ngIf="service.location.area">, {{service.location.area}}</span>

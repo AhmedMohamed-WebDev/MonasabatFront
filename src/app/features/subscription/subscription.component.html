@@ -51,9 +51,14 @@
             </div>
 
             <!-- Warning Messages -->
-            <div *ngIf="stats?.hasWarning" class="alert mb-4" [ngClass]="getWarningClass(stats?.warningType)">
+            <!-- <div *ngIf="stats?.hasWarning" class="alert mb-4" [ngClass]="getWarningClass(stats?.warningType)">
                 <i class="bi me-2" [ngClass]="getWarningIcon(stats?.warningType)"></i>
                 {{ 'supplier.subscription.warnings.' + (stats?.warningType || '') | translate }}
+            </div> -->
+            <!-- Replace the warning message section with: -->
+            <div *ngIf="stats?.hasWarning" class="alert mb-4" [ngClass]="getWarningClass(stats?.warningType)">
+                <i class="bi me-2" [ngClass]="getWarningIcon(stats?.warningType)"></i>
+                {{ getWarningMessage(stats!) }}
             </div>
 
             <!-- Auto Renew Toggle -->

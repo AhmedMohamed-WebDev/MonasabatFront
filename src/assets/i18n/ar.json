@@ -125,7 +125,8 @@
     "mansaf-cooking": "منسف وطبخ",
     "tents-canopies": "خيم وصيوان",
     "zaffat": "زفات تراثية",
-    "entertainment-shows": "فقرات خاصة"
+    "entertainment-shows": "فقرات خاصة",
+    "wedding-arches": "كوشات و استاندات"
   },
   "subcategories": {
     "general": "عام",
@@ -272,7 +273,10 @@
     "drummers-show": "الطبّالة",
     "fireworks-show": "عرض ألعاب نارية",
     "bubble-show": "عرض فقاعات",
-    "live-musician": "موسيقي حي"
+    "live-musician": "موسيقي حي",
+    "wedding-kosha": "كوش أعراس",
+    "flower-stands": "استاندات زهور",
+    "entrance-arches": "أقواس المداخل"
   },
   "cities": {
     "jordan": {
@@ -974,11 +978,16 @@
         "description": "هذا النوع من الخدمات يتطلب التواصل المباشر مع المزود. لن يتمكن العملاء من الحجز مباشرة ولكن يمكنهم إرسال طلبات التواصل."
       },
       "availability": {
-        "title": "التواريخ المتاحة",
-        "datePlaceholder": "اختر التاريخ",
-        "addButton": "إضافة تاريخ",
-        "noDateSelected": "لم يتم اختيار أي تواريخ بعد",
-        "dateExists": "هذا التاريخ مضاف بالفعل"
+        "title": "توفر الخدمة",
+        "fromDate": "متوفر من تاريخ",
+        "toDate": "متوفر حتى تاريخ",
+        "excludedDates": "استثناء تواريخ محددة",
+        "excludedDatesHint": "حدد التواريخ التي لن تكون الخدمة متوفرة فيها",
+        "dateRangeError": "يجب أن يكون تاريخ النهاية بعد تاريخ البداية",
+        "invalidRange": "الرجاء تحديد نطاق تاريخ صحيح",
+        "selectDateRange": "يرجى تحديد نطاق التاريخ أولاً",
+        "dateOutOfRange": "يجب أن يكون التاريخ المحدد ضمن نطاق التاريخ",
+        "dateAlreadyExcluded": "هذا التاريخ مستثنى بالفعل"
       },
       "basicInfo": {
         "serviceName": {

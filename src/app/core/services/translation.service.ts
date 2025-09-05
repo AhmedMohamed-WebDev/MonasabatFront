@@ -36,25 +36,101 @@ export class TranslationService {
   }
 
   // Get translated cities
-  getTranslatedCities(): string[] {
-    const cities = [
-      'Amman',
-      'Irbid',
-      'Zarqa',
-      'Aqaba',
-      'Salt',
-      'Madaba',
-      'Karak',
-      'Tafilah',
-    ];
-    return cities.map((city) => this.instant(`cities.${city.toLowerCase()}`));
-  }
+  // getTranslatedCities(): string[] {
+  //   const cities = [
+  //     'Amman',
+  //     'Irbid',
+  //     'Zarqa',
+  //     'Aqaba',
+  //     'Salt',
+  //     'Madaba',
+  //     'Karak',
+  //     'Tafilah',
+  //   ];
+  //   return cities.map((city) => this.instant(`cities.${city.toLowerCase()}`));
+  // }
 
   // Get translated city by value
+  // getTranslatedCity(cityValue: string): string {
+  //   return this.instant(`cities.${cityValue.toLowerCase()}`) || cityValue;
+  // }
+  // Update the getTranslatedCity method
   getTranslatedCity(cityValue: string): string {
-    return this.instant(`cities.${cityValue.toLowerCase()}`) || cityValue;
+    if (!cityValue) return '';
+
+    const city = cityValue.toLowerCase();
+
+    // Check if it's a Jordanian city
+    if (
+      [
+        'amman',
+        'irbid',
+        'zarqa',
+        'aqaba',
+        'salt',
+        'madaba',
+        'karak',
+        'tafilah',
+      ].includes(city)
+    ) {
+      return this.translate.instant(`cities.jordan.${city}`);
+    }
+
+    // Check if it's a Kuwaiti city
+    if (
+      [
+        'kuwait_city',
+        'ahmadi',
+        'hawalli',
+        'jahra',
+        'farwaniya',
+        'mubarak_al_kabeer',
+        'salmiya',
+        'fahaheel',
+      ].includes(city)
+    ) {
+      return this.translate.instant(`cities.kuwait.${city}`);
+    }
+
+    // Fallback to original city name if no translation found
+    return cityValue;
   }
 
+  // Update the getTranslatedCities method
+  getTranslatedCities(): { value: string; label: string }[] {
+    const jordanCities = [
+      'amman',
+      'irbid',
+      'zarqa',
+      'aqaba',
+      'salt',
+      'madaba',
+      'karak',
+      'tafilah',
+    ];
+
+    const kuwaitCities = [
+      'kuwait_city',
+      'ahmadi',
+      'hawalli',
+      'jahra',
+      'farwaniya',
+      'mubarak_al_kabeer',
+      'salmiya',
+      'fahaheel',
+    ];
+
+    return [
+      ...jordanCities.map((city) => ({
+        value: city,
+        label: this.instant(`cities.jordan.${city}`),
+      })),
+      ...kuwaitCities.map((city) => ({
+        value: city,
+        label: this.instant(`cities.kuwait.${city}`),
+      })),
+    ];
+  }
   // Get translated category by value
   getTranslatedCategory(categoryValue: string): string {
     return this.instant(`categories.${categoryValue}`) || categoryValue;

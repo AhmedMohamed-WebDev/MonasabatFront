@@ -132,6 +132,29 @@
 
               <!-- Manual Location Inputs -->
               <div class="row g-3">
+
+
+                <!-- <div class="col-md-6">
+                  <label class="form-label fw-semibold text-dark">
+                    {{ 'addService.form.location.area.label' | translate }}
+                  </label>
+                  <input type="text" class="form-control form-control-lg" formControlName="area"
+                    [placeholder]="'addService.form.location.area.placeholder' | translate">
+                </div> -->
+
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold text-dark">خط العرض (Latitude)</label>
+                  <input type="number" class="form-control form-control-lg" formControlName="lat" placeholder="31.9566"
+                    step="any" readonly>
+                  <small class="text-muted">{{ 'addService.form.location.latitude.description' | translate }}</small>
+                </div>
+
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold text-dark">خط الطول (Longitude)</label>
+                  <input type="number" class="form-control form-control-lg" formControlName="lng" placeholder="35.9457"
+                    step="any" readonly>
+                  <small class="text-muted">{{ 'addService.form.location.longitude.description' | translate }}</small>
+                </div>
                 <div class="col-md-6">
                   <label class="form-label fw-semibold text-dark">
                     {{ 'addService.form.location.city.label' | translate }}
@@ -147,33 +170,11 @@
                     {{ 'addService.form.location.city.error' | translate }}
                   </div>
                 </div>
-
-                <div class="col-md-6">
-                  <label class="form-label fw-semibold text-dark">
-                    {{ 'addService.form.location.area.label' | translate }}
-                  </label>
-                  <input type="text" class="form-control form-control-lg" formControlName="area"
-                    [placeholder]="'addService.form.location.area.placeholder' | translate">
-                </div>
-
-                <div class="col-md-6">
-                  <label class="form-label fw-semibold text-dark">خط العرض (Latitude)</label>
-                  <input type="number" class="form-control form-control-lg" formControlName="lat" placeholder="31.9566"
-                    step="any" readonly>
-                  <small class="text-muted">{{ 'addService.form.location.latitude.description' | translate }}</small>
-                </div>
-
-                <div class="col-md-6">
-                  <label class="form-label fw-semibold text-dark">خط الطول (Longitude)</label>
-                  <input type="number" class="form-control form-control-lg" formControlName="lng" placeholder="35.9457"
-                    step="any" readonly>
-                  <small class="text-muted">{{ 'addService.form.location.longitude.description' | translate }}</small>
-                </div>
               </div>
             </div>
 
             <!-- Available Dates Section -->
-            <div class="border-top pt-4 mb-4">
+            <!-- <div class="border-top pt-4 mb-4">
               <h5 class="text-dark fw-bold mb-3">
                 {{ 'addService.form.availability.title' | translate }}
               </h5>
@@ -197,8 +198,55 @@
                   </span>
                 </div>
               </div>
-            </div>
+            </div> -->
+            <!-- For both add-service.component.html and edit-service.component.html -->
+            <!-- Replace the existing Available Dates section with: -->
 
+            <div class="border-top pt-4 mb-4">
+              <h5 class="text-dark fw-bold mb-3">
+                {{ 'addService.form.availability.title' | translate }}
+              </h5>
+
+              <div class="row g-3" [formGroup]="serviceForm">
+                <div class="col-md-6" formGroupName="availability">
+                  <div formGroupName="dateRange">
+                    <label class="form-label fw-semibold text-dark">
+                      {{ 'addService.form.availability.fromDate' | translate }} *
+                    </label>
+                    <input type="date" class="form-control form-control-lg" formControlName="from" [min]="today"
+                      (change)="validateDateRange()">
+
+                    <label class="form-label fw-semibold text-dark mt-3">
+                      {{ 'addService.form.availability.toDate' | translate }} *
+                    </label>
+                    <input type="date" class="form-control form-control-lg" formControlName="to"
+                      [min]="serviceForm.get('availability.dateRange.from')?.value" (change)="validateDateRange()">
+                  </div>
+
+                  <!-- Optional: Excluded Dates -->
+                  <div class="mt-3">
+                    <label class="form-label fw-semibold text-dark">
+                      {{ 'addService.form.availability.excludedDates' | translate }}
+                    </label>
+                    <input type="date" class="form-control form-control-lg" (change)="addExcludedDate($event)"
+                      [min]="serviceForm.get('availability.dateRange.from')?.value"
+                      [max]="serviceForm.get('availability.dateRange.to')?.value">
+
+                    <!-- Show excluded dates -->
+                    <div *ngIf="excludedDates.length > 0" class="mt-2">
+                      <div class="d-flex flex-wrap gap-2">
+                        <span *ngFor="let date of excludedDates; let i = index"
+                          class="badge bg-light text-dark border px-3 py-2 d-flex align-items-center">
+                          {{date | date}}
+                          <button type="button" class="btn-close btn-close-sm ms-2" (click)="removeExcludedDate(i)">
+                          </button>
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
             <!-- Media Upload Section -->
             <div class="border-top pt-4 mb-4">
               <h5 class="text-dark fw-bold mb-3">
