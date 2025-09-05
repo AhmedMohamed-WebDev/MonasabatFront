@@ -421,7 +421,7 @@ export class ServiceDetailComponent implements OnInit, OnDestroy {
     const currentLang = this.languageService.getCurrentLanguage();
 
     if (currentLang === 'ar') {
-      return dateObj.toLocaleDateString('ar-SA', {
+      return dateObj.toLocaleDateString('ar', {
         year: 'numeric',
         month: 'long',
         day: 'numeric',

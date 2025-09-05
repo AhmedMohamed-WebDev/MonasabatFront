@@ -14,6 +14,7 @@ import {
   UpdateEventItemRequest,
 } from '../../core/models/event-item.model';
 import {
+  CategoryConfig,
   EVENT_CATEGORIES,
   isContactOnlyService,
 } from '../../core/models/constants/categories.const';
@@ -76,9 +77,39 @@ export class EditServiceComponent implements OnInit {
       maxCapacity: [''],
     });
   }
+  translatedCategories: CategoryConfig[] = [];
 
+  // Add/update these methods
+  private updateTranslations(): void {
+    // Update categories with translations
+    this.translatedCategories = this.categories.map((category) => ({
+      ...category,
+      label: this.translate.instant(`categories.${category.value}`),
+      subcategories: category.subcategories.map((sub) => ({
+        ...sub,
+        label: this.translate.instant(`subcategories.${sub.value}`),
+      })),
+    }));
+
+    // Update subcategories if category is selected
+    const currentCategory = this.serviceForm.get('category')?.value;
+    if (currentCategory) {
+      const category = this.translatedCategories.find(
+        (c) => c.value === currentCategory
+      );
+      if (category) {
+        this.subcategories = category.subcategories;
+      }
+    }
+  }
   ngOnInit(): void {
     this.serviceId = this.route.snapshot.paramMap.get('id')!;
+    this.updateTranslations();
+    // Listen for language changes
+    this.translate.onLangChange.subscribe(() => {
+      this.updateTranslations();
+    });
+
     this.loadServiceData();
   }
 
@@ -151,21 +182,23 @@ export class EditServiceComponent implements OnInit {
     }
   }
 
+  // Update the onCategoryChange method
   onCategoryChange(event: Event): void {
-    const select = event.target as HTMLSelectElement;
-    const value = select.value;
-    const category = this.categories.find((c) => c.value === value);
+    const selectElement = event.target as HTMLSelectElement;
+    if (!selectElement) return;
+
+    const categoryValue = selectElement.value;
+    const category = this.translatedCategories.find(
+      (c) => c.value === categoryValue
+    );
 
     if (category) {
-      // Translate subcategories when category changes
-      this.subcategories = category.subcategories.map((sub) => ({
-        ...sub,
-        label: this.translate.instant(`subcategories.${sub.value}`),
-      }));
+      this.subcategories = category.subcategories;
     } else {
       this.subcategories = [];
     }
 
+    // Reset subcategory when category changes
     this.serviceForm.patchValue({ subcategory: '' });
   }
 

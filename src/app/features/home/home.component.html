@@ -69,7 +69,7 @@
       </div>
       <div class="row g-4">
         <div class="col-6 col-md-3" *ngFor="let service of servicesList">
-          <div class="category-card" (click)="selectCategory(service.value)" [attr.data-category]="service.value">
+          <div class="category-card" (click)="selectService(service.value)">
             <div class="category-icon">
               <i [class]="getCategoryIcon(service.value)"></i>
             </div>
@@ -106,7 +106,7 @@
       </div>
       <div class="row g-4">
         <div class="col-6 col-md-4 col-lg-3" *ngFor="let category of eventTypeCategories">
-          <div class="service-card text-center" (click)="selectCategory(category.value)">
+          <div class="service-card text-center" (click)="selectEventType(category.value)">
             <div class="service-icon">
               <i [class]="getCategoryIcon(category.value)"></i>
             </div>

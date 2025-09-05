@@ -18,9 +18,9 @@ export class RateLimiterService {
   private lastGlobalReset = Date.now();
 
   // Rate limiting configuration - more lenient for better UX
-  private readonly MAX_CALLS_PER_MINUTE = 60; // Increased from 30
-  private readonly MAX_CALLS_PER_ENDPOINT = 20; // Increased from 10
-  private readonly BLOCK_DURATION = 30000; // Reduced to 30 seconds
+  private readonly MAX_CALLS_PER_MINUTE = 100; // Increased from 30
+  private readonly MAX_CALLS_PER_ENDPOINT = 40; // Increased from 10
+  private readonly BLOCK_DURATION = 60000; // Reduced to 30 seconds
   private readonly RESET_INTERVAL = 60000; // 1 minute
 
   // Observable for rate limit status

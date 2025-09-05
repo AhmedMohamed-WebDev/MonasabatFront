@@ -37,41 +37,37 @@
                 </textarea>
               </div>
 
-              <!-- Categories -->
+              <!-- Replace the existing category select element -->
               <div class="col-md-6">
                 <label class="form-label fw-semibold text-dark">
                   {{ 'addService.form.basicInfo.eventType.label' | translate }}
                 </label>
-                <select class="form-select form-select-lg" [class.is-invalid]="isFieldInvalid('category')"
-                  formControlName="category" (change)="onCategoryChange($event)">
-                  <option value="">
-                    {{ 'addService.form.basicInfo.eventType.placeholder' | translate }}
-                  </option>
-                  <option *ngFor="let cat of getTranslatedCategories()" [value]="cat.value">
+                <select class="form-select form-select-lg" formControlName="category"
+                  [class.is-invalid]="isFieldInvalid('category')" (change)="onCategoryChange($event)">
+                  <option value="">{{ 'addService.form.basicInfo.eventType.placeholder' | translate }}</option>
+                  <option *ngFor="let cat of translatedCategories" [value]="cat.value">
                     {{cat.label}}
                   </option>
                 </select>
                 <div class="invalid-feedback" *ngIf="isFieldInvalid('category')">
-                  {{ 'addService.form.validation.selectEventType' | translate }}
+                  {{ 'addService.form.basicInfo.eventType.error' | translate }}
                 </div>
               </div>
 
-              <!-- Subcategories -->
-              <div class="col-md-6" *ngIf="subcategories.length">
+              <!-- Update the subcategory select element -->
+              <div class="col-md-6">
                 <label class="form-label fw-semibold text-dark">
                   {{ 'addService.form.basicInfo.serviceType.label' | translate }}
                 </label>
                 <select class="form-select form-select-lg" formControlName="subcategory"
                   [class.is-invalid]="isFieldInvalid('subcategory')">
-                  <option value="">
-                    {{ 'addService.form.basicInfo.serviceType.placeholder' | translate }}
-                  </option>
+                  <option value="">{{ 'addService.form.basicInfo.serviceType.placeholder' | translate }}</option>
                   <option *ngFor="let sub of subcategories" [value]="sub.value">
                     {{sub.label}}
                   </option>
                 </select>
                 <div class="invalid-feedback" *ngIf="isFieldInvalid('subcategory')">
-                  {{ 'addService.form.validation.selectServiceType' | translate }}
+                  {{ 'addService.form.basicInfo.serviceType.error' | translate }}
                 </div>
               </div>
 

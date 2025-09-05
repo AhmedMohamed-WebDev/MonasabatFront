@@ -279,6 +279,18 @@ export class HomeComponent implements OnInit, OnDestroy {
       : { category: categoryValue };
     this.router.navigate(['/search-results'], { queryParams });
   }
+  // For Event Types section
+  selectEventType(categoryValue: string) {
+    this.router.navigate(['/search-results'], {
+      queryParams: { category: categoryValue },
+    });
+  }
+  // For Services section
+  selectService(categoryValue: string) {
+    this.router.navigate(['/search-results'], {
+      queryParams: { category: categoryValue },
+    });
+  }
 
   onSearchSubmit() {
     const selectedRange = this.peopleRanges.find(
