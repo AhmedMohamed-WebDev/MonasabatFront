@@ -70,15 +70,19 @@ export class AuthComponent implements OnInit {
       return;
     }
 
-    // Phone number validation for Jordan and Kuwait
-    const jordanPhoneRegex = /^(\+962|962|0)?7[789]\d{7}$/;
-    const kuwaitPhoneRegex = /^(\+965|965|0)?[569]\d{7}$/;
+    // Phone number validation: normalize and validate as +965 (Kuwait) or +962 (Jordan)
+    let apiPhone: string;
+    try {
+      apiPhone = this.normalizePhoneForApi(this.phone || '');
+    } catch (err) {
+      this.error = this.translate.instant('auth.validation.phoneInvalid');
+      return;
+    }
 
-    const cleanedPhone = this.phone.replace(/[\s\-\(\)]/g, '');
-    if (
-      !jordanPhoneRegex.test(cleanedPhone) &&
-      !kuwaitPhoneRegex.test(cleanedPhone)
-    ) {
+    const kuwaitApiRegex = /^\+965\d{8}$/;
+    const jordanApiRegex = /^\+962\d{9}$/;
+
+    if (!kuwaitApiRegex.test(apiPhone) && !jordanApiRegex.test(apiPhone)) {
       this.error = this.translate.instant('auth.validation.phoneInvalid');
       return;
     }
@@ -88,10 +92,11 @@ export class AuthComponent implements OnInit {
     this.success = '';
 
     try {
-      const cleanPhone = this.phone.replace(/[\s\-\(\)]/g, '');
+      const raw = this.phone;
+      const apiPhone = this.normalizePhoneForApi(raw);
       // Store the response which now includes the OTP
       const response: any = await this.authService.sendOTP(
-        cleanPhone,
+        apiPhone,
         this.name.trim()
       );
 
@@ -141,8 +146,9 @@ export class AuthComponent implements OnInit {
     this.error = '';
 
     try {
+      const apiPhone = this.normalizePhoneForApi(this.phone);
       const response: AuthResponse = await this.authService.verifyOTP(
-        this.phone.trim(),
+        apiPhone,
         this.otp.trim(),
         this.name.trim() // Always send the name
       );
@@ -205,11 +211,72 @@ export class AuthComponent implements OnInit {
     this.error = '';
   }
 
+  // Normalize phone to +965... or +962... for API
+  normalizePhoneForApi(input: string): string {
+    let value = (input || '').replace(/[^0-9\+]/g, '');
+    // If starts with +, keep it, else remove leading zeros
+    if (!value.startsWith('+')) {
+      // remove leading zeros
+      while (value.startsWith('0')) value = value.substring(1);
+    }
+
+    // Kuwait heuristics
+    if (
+      value.startsWith('+965') ||
+      value.startsWith('965') ||
+      /^9\d{7}$/.test(value)
+    ) {
+      // extract local 8 digits
+      const cleaned = value.replace(/^\+?965/, '');
+      const local = cleaned.slice(-8);
+      return `+965${local}`;
+    }
+
+    // Jordan heuristics
+    if (
+      value.startsWith('+962') ||
+      value.startsWith('962') ||
+      /^7\d{8}$/.test(value)
+    ) {
+      const cleaned = value.replace(/^\+?962/, '');
+      const local = cleaned.slice(-9);
+      return `+962${local}`;
+    }
+
+    // Fallback: return digits-only trimmed
+    return value.replace(/[^0-9]/g, '');
+  }
+
   formatPhoneNumber() {
     // Remove all non-digit characters
     let value = this.phone.replace(/\D/g, '');
+    // Handle Kuwait numbers first (country code 965, local 8 digits)
+    if (value.startsWith('965')) {
+      let local = value.replace(/^965/, '');
+      local = local.substring(0, 8); // max 8 digits
+      const a = local.substring(0, 3);
+      const b = local.substring(3, 6);
+      const c = local.substring(6);
+      this.phone = `+965${a ? ' ' + a : ''}${b ? ' ' + b : ''}${
+        c ? ' ' + c : ''
+      }`.trim();
+      return;
+    }
 
-    // Remove leading zeros or country code
+    // If user entered an 8-digit Kuwait local number (starts with 9)
+    if (/^9\d{7}$/.test(value)) {
+      const local = value.substring(0, 8);
+      const a = local.substring(0, 3);
+      const b = local.substring(3, 6);
+      const c = local.substring(6);
+      this.phone = `+965${a ? ' ' + a : ''}${b ? ' ' + b : ''}${
+        c ? ' ' + c : ''
+      }`.trim();
+      return;
+    }
+
+    // Default: treat as Jordan number
+    // Remove leading country code or leading zero
     if (value.startsWith('962')) {
       value = value.substring(3);
     } else if (value.startsWith('0')) {
@@ -221,7 +288,7 @@ export class AuthComponent implements OnInit {
       value = value.substring(0, 9);
     }
 
-    // Format as (07X) XXX-XXXX
+    // Format as (07X) XXX-XXXX or partial
     if (value.length > 0) {
       this.phone =
         value.length <= 3
