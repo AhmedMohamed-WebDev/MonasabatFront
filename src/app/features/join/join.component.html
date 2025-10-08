@@ -91,8 +91,8 @@
                 <option value="">{{ 'join.form.placeholders.serviceType' | translate }}</option>
 
                 <!-- Main Categories -->
-                <optgroup *ngFor="let category of categories" [label]="'categories.' + category.value | translate">
-                  <option [value]="category.value">{{ 'categories.' + category.value | translate }}</option>
+                <optgroup *ngFor="let category of categories" [label]="('categories.' + category.value) | translate">
+                  <option [value]="category.value">{{ ('categories.' + category.value) | translate }}</option>
                   <!-- Subcategories -->
                   <option *ngFor="let sub of category.subcategories" [value]="sub.value">
                     — {{ 'subcategories.' + sub.value | translate }}

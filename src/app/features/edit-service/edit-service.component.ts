@@ -8,6 +8,8 @@ import {
   ReactiveFormsModule,
   FormArray,
 } from '@angular/forms';
+import { merge } from 'rxjs';
+import { debounceTime, distinctUntilChanged, filter } from 'rxjs/operators';
 import { Router, ActivatedRoute } from '@angular/router';
 import { EventItemService } from '../../core/services/event-item.service';
 import {
@@ -45,7 +47,7 @@ export class EditServiceComponent implements OnInit {
   isUploading = false;
   isLoadingData = true;
   selectedImages: File[] = [];
-  selectedVideos: File[] = [];
+  selectedVideos: any[] = [];
   existingImages: string[] = [];
   existingVideos: string[] = [];
   availableDates: string[] = [];
@@ -63,6 +65,8 @@ export class EditServiceComponent implements OnInit {
     'Amman',
     'Irbid',
     'Zarqa',
+    'Jerash',
+    'Balqa',
     'Aqaba',
     'Salt',
     'Madaba',
@@ -240,12 +244,31 @@ export class EditServiceComponent implements OnInit {
   ngOnInit(): void {
     this.serviceId = this.route.snapshot.paramMap.get('id')!;
     this.updateTranslations();
+
     // Listen for language changes
     this.translate.onLangChange.subscribe(() => {
       this.updateTranslations();
     });
 
     this.loadServiceData();
+
+    // Add coordinate change monitoring (same as add-service)
+    merge(
+      this.serviceForm.get('lat')!.valueChanges,
+      this.serviceForm.get('lng')!.valueChanges
+    )
+      .pipe(
+        debounceTime(300),
+        distinctUntilChanged(),
+        filter(() => {
+          const lat = parseFloat(this.serviceForm.get('lat')?.value);
+          const lng = parseFloat(this.serviceForm.get('lng')?.value);
+          return !isNaN(lat) && !isNaN(lng);
+        })
+      )
+      .subscribe(() => {
+        this.updateMapFromCoordinates();
+      });
   }
 
   async loadServiceData(): Promise<void> {
@@ -382,21 +405,64 @@ export class EditServiceComponent implements OnInit {
     this.selectedImages = [...this.selectedImages, ...files];
   }
 
-  onVideoSelect(event: any): void {
-    const files = Array.from(event.target.files) as File[];
-    const totalVideos =
-      this.existingVideos.length + this.selectedVideos.length + files.length;
+  // onVideoSelect(event: any): void {
+  //   const files = Array.from(event.target.files) as File[];
+  //   const totalVideos =
+  //     this.existingVideos.length + this.selectedVideos.length + files.length;
 
-    if (totalVideos > 3) {
-      this.notificationService.warning(
-        this.translate.instant('editService.form.media.maxVideosError'),
-        this.translate.instant('editService.form.media.maxVideosError')
-      );
-      return;
+  //   if (totalVideos > 3) {
+  //     this.notificationService.warning(
+  //       this.translate.instant('editService.form.media.maxVideosError'),
+  //       this.translate.instant('editService.form.media.maxVideosError')
+  //     );
+  //     return;
+  //   }
+  //   this.selectedVideos = [...this.selectedVideos, ...files];
+  // }
+  onVideoSelect(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files) {
+      const files = Array.from(input.files);
+
+      // Check total count
+      if (this.selectedVideos.length + files.length > 2) {
+        this.notificationService.warning(
+          this.translate.instant('addService.form.media.errors.videoCount'),
+          'Warning'
+        );
+        return;
+      }
+
+      for (const file of files) {
+        // Check file size
+        if (file.size > 50 * 1024 * 1024) {
+          this.notificationService.error(
+            this.translate.instant('addService.form.media.errors.videoSize', {
+              fileName: file.name,
+            }),
+            'Error'
+          );
+          continue;
+        }
+
+        // Check file type
+        if (!['video/mp4', 'video/webm'].includes(file.type)) {
+          this.notificationService.error(
+            this.translate.instant('addService.form.media.errors.videoType', {
+              fileName: file.name,
+            }),
+            'Error'
+          );
+          continue;
+        }
+
+        this.selectedVideos.push({
+          file: file,
+          name: file.name,
+        });
+      }
     }
-    this.selectedVideos = [...this.selectedVideos, ...files];
   }
-
   removeImage(index: number): void {
     this.selectedImages.splice(index, 1);
   }
@@ -509,7 +575,7 @@ export class EditServiceComponent implements OnInit {
       });
 
       this.selectedVideos.forEach((video) => {
-        formData.append('videos', video);
+        formData.append('videos', video.file);
       });
 
       await this.eventItemService
@@ -599,5 +665,32 @@ export class EditServiceComponent implements OnInit {
     const category = this.serviceForm.get('category')?.value;
     const subcategory = this.serviceForm.get('subcategory')?.value;
     return isContactOnlyService(category, subcategory);
+  }
+  updateMapFromCoordinates(): void {
+    const latValue = this.serviceForm.get('lat')?.value;
+    const lngValue = this.serviceForm.get('lng')?.value;
+
+    if (!latValue || !lngValue) {
+      return;
+    }
+
+    const lat = parseFloat(latValue);
+    const lng = parseFloat(lngValue);
+
+    if (
+      !isNaN(lat) &&
+      !isNaN(lng) &&
+      lat >= -90 &&
+      lat <= 90 &&
+      lng >= -180 &&
+      lng <= 180
+    ) {
+      console.log('Updating map location to:', { lat, lng });
+
+      this.initialMapLocation = {
+        lat: Number(lat.toFixed(6)),
+        lng: Number(lng.toFixed(6)),
+      };
+    }
   }
 }

@@ -7,6 +7,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { Router, RouterLink } from '@angular/router';
 import { AdminStats, JoinRequest } from '../../core/models/admin.model';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslationService } from '../../core/services/translation.service';
 import { LanguageService } from '../../core/services/language.service';
 import { ContactMessage } from '../../core/models/contact.model';
 import { forkJoin } from 'rxjs';
@@ -54,7 +55,8 @@ export class AdminDashboardComponent implements OnInit {
     private router: Router,
     private translate: TranslateService,
     private languageService: LanguageService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private translationService: TranslationService
   ) {}
 
   ngOnInit(): void {
@@ -366,4 +368,48 @@ export class AdminDashboardComponent implements OnInit {
       }
     }, 8000);
   }
+
+  // Translate a serviceType which may contain commas or be a category value
+  translateServiceType(serviceType?: string): string {
+    if (!serviceType) return '';
+    // Some requests may send comma-separated values; handle them
+    const parts = serviceType
+      .split(',')
+      .map((p) => p.trim())
+      .filter(Boolean);
+    const translated = parts.map((part) => {
+      // normalize part to match translation keys: lowercased, spaces/underscores -> hyphen
+      const normalized = part.toLowerCase().replace(/[\s_]+/g, '-');
+
+      // Try both categories and subcategories keys (some entries live under subcategories)
+      const catKey = `categories.${normalized}`;
+      const subKey = `subcategories.${normalized}`;
+
+      const tCat = this.translate.instant(catKey);
+      if (tCat && tCat !== catKey) return tCat;
+
+      const tSub = this.translate.instant(subKey);
+      if (tSub && tSub !== subKey) return tSub;
+
+      // As a last try, also check underscore variant
+      const underscore = normalized.replace(/-/g, '_');
+      const tCatUnd = this.translate.instant(`categories.${underscore}`);
+      if (tCatUnd && tCatUnd !== `categories.${underscore}`) return tCatUnd;
+
+      const tSubUnd = this.translate.instant(`subcategories.${underscore}`);
+      if (tSubUnd && tSubUnd !== `subcategories.${underscore}`) return tSubUnd;
+
+      // Fallback to the original raw part if no translation found
+      return part;
+    });
+    return translated.join(', ');
+  }
+
+  // Translate a city value using TranslationService helper
+  translateCity(city?: string): string {
+    if (!city) return '';
+    return this.translationService.getTranslatedCity(city) || city;
+  }
 }
+
+// Helper methods moved below component for template usage

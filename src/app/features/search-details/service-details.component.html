@@ -277,7 +277,7 @@
               <div class="related-item" *ngFor="let related of relatedServices"
                 (click)="viewRelatedService(related._id)">
                 <div class="related-image">
-                  <img [src]="related.images?.[0] || '/public/placeholder-image.jpg'" [alt]="related.name">
+                  <img [src]="related.images?.[0] || '/assets/placeholder.png'" [alt]="related.name">
                 </div>
                 <div class="related-info">
                   <h6 class="related-name">{{related.name}}</h6>

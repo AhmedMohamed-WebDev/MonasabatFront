@@ -117,7 +117,7 @@
         <div class="detail-card">
           <h5 class="text-primary-dark">{{ 'adminDashboard.stats.details.topCategories.title' | translate }}</h5>
           <div *ngFor="let category of stats.topCategories" class="stat-item">
-            <span class="text-muted">{{ 'categories.' + category._id.toLowerCase() | translate }}:</span>
+            <span class="text-muted">{{ ('categories.' + category._id.toLowerCase()) | translate }}:</span>
             <strong>{{ category.count }}</strong>
           </div>
         </div>
@@ -218,11 +218,11 @@
                   </p>
                   <p class="mb-1" *ngIf="request.serviceType">
                     <strong>{{ 'adminDashboard.requests.details.service' | translate }}:</strong>
-                    {{ 'categories.' + request.serviceType | translate }}
+                    {{ translateServiceType(request.serviceType) }}
                   </p>
                   <p class="mb-1" *ngIf="request.city">
                     <strong>{{ 'adminDashboard.requests.details.city' | translate }}:</strong>
-                    {{ 'cities.' + request.city.toLowerCase() | translate }}
+                    {{ translateCity(request.city) }}
                   </p>
 
                   <!-- Action Buttons -->
@@ -264,9 +264,8 @@
                   <tr *ngFor="let request of joinRequests">
                     <td>{{ request.name }}</td>
                     <td>{{ request.phone }}</td>
-                    <td>{{ request.serviceType ? ('categories.' + request.serviceType.toLowerCase() | translate) : 'N/A'
-                      }}</td>
-                    <td>{{ request.city || 'N/A' }}</td>
+                    <td>{{ request.serviceType ? translateServiceType(request.serviceType) : 'N/A' }}</td>
+                    <td>{{ request.city ? translateCity(request.city) : 'N/A' }}</td>
                     <td>
                       <span [class]="getStatusBadgeClass(request.status)">
                         {{ 'adminDashboard.requests.status.' + request.status | translate }}

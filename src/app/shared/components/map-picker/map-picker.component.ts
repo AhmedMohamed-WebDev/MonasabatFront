@@ -7,6 +7,7 @@ import {
   OnDestroy,
   ElementRef,
   ViewChild,
+  SimpleChanges,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import * as L from 'leaflet';
@@ -108,7 +109,19 @@ export class MapPickerComponent implements OnInit, OnDestroy {
   private map!: L.Map;
   private marker?: L.Marker;
   selectedLocation?: MapLocation;
-
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['initialLocation'] && this.map) {
+      const newLocation = changes['initialLocation'].currentValue;
+      if (newLocation && newLocation.lat && newLocation.lng) {
+        this.setLocation(newLocation.lat, newLocation.lng);
+        // Also center the map on the new location
+        this.map.setView(
+          [newLocation.lat, newLocation.lng],
+          this.map.getZoom()
+        );
+      }
+    }
+  }
   ngOnInit(): void {
     this.initMap();
   }
@@ -151,6 +164,10 @@ export class MapPickerComponent implements OnInit, OnDestroy {
     }
 
     // Add new marker
+    // Validate coordinates
+    if (lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+      return;
+    }
     this.marker = L.marker([lat, lng], {
       icon: L.divIcon({
         className: 'custom-marker',

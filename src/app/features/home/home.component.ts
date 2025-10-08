@@ -75,6 +75,8 @@ export class HomeComponent implements OnInit, OnDestroy {
     'Amman',
     'Irbid',
     'Zarqa',
+    'Jerash',
+    'Balqa',
     'Aqaba',
     'Salt',
     'Madaba',

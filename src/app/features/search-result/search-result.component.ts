@@ -75,6 +75,8 @@ export class SearchResultComponent implements OnInit {
     'Amman',
     'Irbid',
     'Zarqa',
+    'Jerash',
+    'Balqa',
     'Aqaba',
     'Salt',
     'Madaba',
@@ -517,7 +519,8 @@ export class SearchResultComponent implements OnInit {
 
   getCityLabel(value: string): string {
     return (
-      this.translationService.instant(`cities.${value.toLowerCase()}`) || value
+      this.translationService.instant(`cities.jordan.${value.toLowerCase()}`) ||
+      value
     );
   }
 

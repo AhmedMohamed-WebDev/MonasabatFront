@@ -7,6 +7,57 @@ export interface CategoryConfig {
 
 export const EVENT_CATEGORIES: CategoryConfig[] = [
   {
+    value: 'halls',
+    label: 'Halls',
+    contactOnly: true,
+    subcategories: [
+      { value: 'wedding-halls', label: 'Wedding Halls', contactOnly: true },
+      {
+        value: 'engagement-halls',
+        label: 'Engagement Halls',
+        contactOnly: true,
+      },
+      {
+        value: 'conference-centers',
+        label: 'Conference Centers',
+        contactOnly: true,
+      },
+      {
+        value: 'multi-purpose-halls',
+        label: 'Multi-Purpose Halls',
+        contactOnly: true,
+      },
+      { value: 'hotel-ballrooms', label: 'Hotel Ballrooms', contactOnly: true },
+      {
+        value: 'guest-houses',
+        label: 'Guest Houses / Madafat',
+        contactOnly: true,
+      },
+      {
+        value: 'open-grounds',
+        label: 'Open Grounds & Yards',
+        contactOnly: true,
+      },
+    ],
+  },
+  {
+    value: 'farm',
+    label: 'Farm & Outdoor',
+    contactOnly: true,
+    subcategories: [
+      { value: 'outdoor-farms', label: 'Outdoor Farms', contactOnly: true },
+      { value: 'garden-venues', label: 'Garden Venues', contactOnly: true },
+      {
+        value: 'mountain-view-farms',
+        label: 'Mountain View Farms',
+        contactOnly: true,
+      },
+      { value: 'villa-farms', label: 'Villa Farms', contactOnly: true },
+      { value: 'pool-farms', label: 'Pool Farms', contactOnly: true },
+      { value: 'daily-rental', label: 'Daily Rental', contactOnly: true },
+    ],
+  },
+  {
     value: 'wedding',
     label: 'Wedding',
     subcategories: [
@@ -17,6 +68,29 @@ export const EVENT_CATEGORIES: CategoryConfig[] = [
       { value: 'entertainment', label: 'Entertainment' },
     ],
     contactOnly: true,
+  },
+  {
+    value: 'zaffat',
+    label: 'Zaffat',
+    subcategories: [
+      { value: 'jordanian-zaffa', label: 'Jordanian Zaffa' },
+      { value: 'palestinian-zaffa', label: 'Palestinian Zaffa' },
+      { value: 'mixed-zaffa', label: 'Mixed Zaffa' },
+      { value: 'lebanese-dabke', label: 'Lebanese Dabke Group' },
+      { value: 'syrian-aradah', label: 'Syrian Aradah (Sword & Shield)' },
+      { value: 'egyptian-tanoura', label: 'Egyptian Tanoura Show' },
+    ],
+  },
+  {
+    value: 'event-planner',
+    label: 'Event Planner',
+    subcategories: [
+      { value: 'wedding-planning', label: 'Wedding Planning' },
+      { value: 'corporate-events', label: 'Corporate Events' },
+      { value: 'birthday-parties', label: 'Birthday Parties' },
+      { value: 'graduation-events', label: 'Graduation Events' },
+      { value: 'full-service-planning', label: 'Full Service Planning' },
+    ],
   },
   {
     value: 'chairs',
@@ -59,57 +133,7 @@ export const EVENT_CATEGORIES: CategoryConfig[] = [
       { value: 'white-plate-cars', label: 'White Plate Cars' },
     ],
   },
-  {
-    value: 'farm',
-    label: 'Farm & Outdoor',
-    contactOnly: true,
-    subcategories: [
-      { value: 'outdoor-farms', label: 'Outdoor Farms', contactOnly: true },
-      { value: 'garden-venues', label: 'Garden Venues', contactOnly: true },
-      {
-        value: 'mountain-view-farms',
-        label: 'Mountain View Farms',
-        contactOnly: true,
-      },
-      { value: 'villa-farms', label: 'Villa Farms', contactOnly: true },
-      { value: 'pool-farms', label: 'Pool Farms', contactOnly: true },
-      { value: 'daily-rental', label: 'Daily Rental', contactOnly: true },
-    ],
-  },
-  {
-    value: 'halls',
-    label: 'Halls',
-    contactOnly: true,
-    subcategories: [
-      { value: 'wedding-halls', label: 'Wedding Halls', contactOnly: true },
-      {
-        value: 'engagement-halls',
-        label: 'Engagement Halls',
-        contactOnly: true,
-      },
-      {
-        value: 'conference-centers',
-        label: 'Conference Centers',
-        contactOnly: true,
-      },
-      {
-        value: 'multi-purpose-halls',
-        label: 'Multi-Purpose Halls',
-        contactOnly: true,
-      },
-      { value: 'hotel-ballrooms', label: 'Hotel Ballrooms', contactOnly: true },
-      {
-        value: 'guest-houses',
-        label: 'Guest Houses / Madafat',
-        contactOnly: true,
-      },
-      {
-        value: 'open-grounds',
-        label: 'Open Grounds & Yards',
-        contactOnly: true,
-      },
-    ],
-  },
+
   {
     value: 'photographers',
     label: 'Photographers',
@@ -175,17 +199,7 @@ export const EVENT_CATEGORIES: CategoryConfig[] = [
       { value: 'stage-equipment', label: 'Stage Equipment' },
     ],
   },
-  {
-    value: 'event-planner',
-    label: 'Event Planner',
-    subcategories: [
-      { value: 'wedding-planning', label: 'Wedding Planning' },
-      { value: 'corporate-events', label: 'Corporate Events' },
-      { value: 'birthday-parties', label: 'Birthday Parties' },
-      { value: 'graduation-events', label: 'Graduation Events' },
-      { value: 'full-service-planning', label: 'Full Service Planning' },
-    ],
-  },
+
   {
     value: 'mansaf-cooking',
     label: 'Mansaf & Cooking',
@@ -245,18 +259,7 @@ export const EVENT_CATEGORIES: CategoryConfig[] = [
       { value: 'special-offers', label: 'Special Offers' },
     ],
   },
-  {
-    value: 'zaffat',
-    label: 'Zaffat',
-    subcategories: [
-      { value: 'jordanian-zaffa', label: 'Jordanian Zaffa' },
-      { value: 'palestinian-zaffa', label: 'Palestinian Zaffa' },
-      { value: 'mixed-zaffa', label: 'Mixed Zaffa' },
-      { value: 'lebanese-dabke', label: 'Lebanese Dabke Group' },
-      { value: 'syrian-aradah', label: 'Syrian Aradah (Sword & Shield)' },
-      { value: 'egyptian-tanoura', label: 'Egyptian Tanoura Show' },
-    ],
-  },
+
   {
     value: 'entertainment-shows',
     label: 'Entertainment Shows',

@@ -350,7 +350,9 @@
       "salt": "Salt",
       "madaba": "Madaba",
       "karak": "Karak",
-      "tafilah": "Tafilah"
+      "tafilah": "Tafilah",
+      "jerash": "Jerash",
+      "balqa": "Balqa"
     },
     "kuwait": {
       "title": "Kuwait",
@@ -1057,6 +1059,21 @@
           "label": "Videos (up to 3 videos)",
           "preview": "Video Preview"
         },
+        "limits": {
+          "imageTitle": "Image Upload Limits",
+          "imageDescription": "Maximum 5 images, 10MB each. Supported formats: JPEG, PNG, WebP",
+          "videoTitle": "Video Upload Limits",
+          "videoDescription": "Maximum 2 videos, 50MB each. Supported formats: MP4, WebM",
+          "quotaWarning": "Note: There's a monthly upload limit. Please optimize your media files."
+        },
+        "errors": {
+          "imageSize": "Image '{{fileName}}' exceeds 10MB limit",
+          "videoSize": "Video '{{fileName}}' exceeds 50MB limit",
+          "imageCount": "Maximum 5 images allowed",
+          "videoCount": "Maximum 2 videos allowed",
+          "imageType": "File '{{fileName}}' is not a supported image format",
+          "videoType": "File '{{fileName}}' is not a supported video format"
+        },
         "imageSizeError": "File {{fileName}} exceeds the 5MB size limit",
         "videoSizeError": "File {{fileName}} exceeds the 50MB size limit"
       },
@@ -1082,6 +1099,10 @@
         "createFailed": "Failed to create service. Please try again.",
         "uploadFailed": "Failed to upload media files. Please try again."
       }
+    },
+    "loading": {
+      "text": "Loading...",
+      "message": "Loading service data..."
     }
   },
   "editService": {
@@ -1093,6 +1114,12 @@
       "contactOnly": {
         "notice": "Contact-Only Service",
         "description": "This service type requires direct contact with the supplier. Customers will not be able to book directly but can send contact requests."
+      },
+      "buttons": {
+        "cancel": "Cancel",
+        "submit": "Save Changes",
+        "saving": "Saving...",
+        "uploading": "Uploading Media..."
       },
       "media": {
         "maxImagesError": "You can upload a maximum of 5 images",
@@ -1107,6 +1134,10 @@
       },
       "warning": {
         "uploadFailed": "Service updated but failed to upload new media files"
+      },
+      "loading": {
+        "text": "Loading...",
+        "message": "Loading service data..."
       }
     }
   },

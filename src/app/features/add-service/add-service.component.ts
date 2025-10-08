@@ -9,6 +9,8 @@ import {
   FormArray,
 } from '@angular/forms';
 import { Router } from '@angular/router';
+import { merge } from 'rxjs';
+import { debounceTime, distinctUntilChanged, filter } from 'rxjs/operators';
 import { EventItemService } from '../../core/services/event-item.service';
 import { CreateEventItemRequest } from '../../core/models/event-item.model';
 import {
@@ -53,6 +55,8 @@ export class AddServiceComponent implements OnInit {
     'Amman',
     'Irbid',
     'Zarqa',
+    'Jerash',
+    'Balqa',
     'Aqaba',
     'Salt',
     'Madaba',
@@ -87,6 +91,23 @@ export class AddServiceComponent implements OnInit {
     this.initForm();
     this.setupCategoryListener();
     this.updateTranslations();
+    // Add this new section for coordinate change monitoring
+    merge(
+      this.serviceForm.get('lat')!.valueChanges,
+      this.serviceForm.get('lng')!.valueChanges
+    )
+      .pipe(
+        debounceTime(300),
+        distinctUntilChanged(),
+        filter(() => {
+          const lat = parseFloat(this.serviceForm.get('lat')?.value);
+          const lng = parseFloat(this.serviceForm.get('lng')?.value);
+          return !isNaN(lat) && !isNaN(lng);
+        })
+      )
+      .subscribe(() => {
+        this.updateMapFromCoordinates();
+      });
 
     // Listen for language changes
     this.translate.onLangChange.subscribe(() => {
@@ -374,29 +395,73 @@ export class AddServiceComponent implements OnInit {
   }
 
   // Method to handle video selection
+  // onVideoSelect(event: Event): void {
+  //   const input = event.target as HTMLInputElement;
+  //   if (input.files) {
+  //     const files = Array.from(input.files);
+  //     const maxVideos = 3;
+  //     const maxSize = 50 * 1024 * 1024; // 50MB
+
+  //     // Limit to max 3 videos
+  //     const validFiles = files.slice(
+  //       0,
+  //       Math.max(0, maxVideos - this.selectedVideos.length)
+  //     );
+
+  //     for (const file of validFiles) {
+  //       // Check file size
+  //       if (file.size > maxSize) {
+  //         this.notificationService.error(
+  //           this.translate.instant('addService.form.media.videoSizeError', {
+  //             fileName: file.name,
+  //           }),
+  //           this.translate.instant('addService.form.media.videoSizeError', {
+  //             fileName: file.name,
+  //           })
+  //         );
+  //         continue;
+  //       }
+
+  //       this.selectedVideos.push({
+  //         file: file,
+  //         name: file.name,
+  //       });
+  //     }
+  //   }
+  // }
   onVideoSelect(event: Event): void {
     const input = event.target as HTMLInputElement;
     if (input.files) {
       const files = Array.from(input.files);
-      const maxVideos = 3;
-      const maxSize = 50 * 1024 * 1024; // 50MB
 
-      // Limit to max 3 videos
-      const validFiles = files.slice(
-        0,
-        Math.max(0, maxVideos - this.selectedVideos.length)
-      );
+      // Check total count
+      if (this.selectedVideos.length + files.length > 2) {
+        this.notificationService.warning(
+          this.translate.instant('addService.form.media.errors.videoCount'),
+          'Warning'
+        );
+        return;
+      }
 
-      for (const file of validFiles) {
+      for (const file of files) {
         // Check file size
-        if (file.size > maxSize) {
+        if (file.size > 50 * 1024 * 1024) {
           this.notificationService.error(
-            this.translate.instant('addService.form.media.videoSizeError', {
+            this.translate.instant('addService.form.media.errors.videoSize', {
               fileName: file.name,
             }),
-            this.translate.instant('addService.form.media.videoSizeError', {
+            'Error'
+          );
+          continue;
+        }
+
+        // Check file type
+        if (!['video/mp4', 'video/webm'].includes(file.type)) {
+          this.notificationService.error(
+            this.translate.instant('addService.form.media.errors.videoType', {
               fileName: file.name,
-            })
+            }),
+            'Error'
           );
           continue;
         }
@@ -408,7 +473,6 @@ export class AddServiceComponent implements OnInit {
       }
     }
   }
-
   // Method to remove a video
   removeVideo(index: number): void {
     this.selectedVideos.splice(index, 1);
@@ -467,7 +531,68 @@ export class AddServiceComponent implements OnInit {
       lng: '',
     });
   }
+  // Add this method to the class
+  // updateMapFromCoordinates(): void {
+  //   const lat = this.serviceForm.get('lat')?.value;
+  //   const lng = this.serviceForm.get('lng')?.value;
 
+  //   if (lat && lng && !isNaN(lat) && !isNaN(lng)) {
+  //     this.initialMapLocation = { lat, lng };
+  //   }
+  // }
+  // updateMapFromCoordinates(): void {
+  //   const lat = parseFloat(this.serviceForm.get('lat')?.value);
+  //   const lng = parseFloat(this.serviceForm.get('lng')?.value);
+
+  //   if (
+  //     !isNaN(lat) &&
+  //     !isNaN(lng) &&
+  //     lat >= -90 &&
+  //     lat <= 90 &&
+  //     lng >= -180 &&
+  //     lng <= 180
+  //   ) {
+  //     console.log('Updating map location to:', { lat, lng }); // Debug log
+
+  //     // Create a new object to force change detection
+  //     this.initialMapLocation = {
+  //       lat: Number(lat.toFixed(6)),
+  //       lng: Number(lng.toFixed(6)),
+  //     };
+  //   }
+  // }
+  updateMapFromCoordinates(): void {
+    const latValue = this.serviceForm.get('lat')?.value;
+    const lngValue = this.serviceForm.get('lng')?.value;
+
+    // Check if values exist and are not empty strings
+    if (!latValue || !lngValue) {
+      return;
+    }
+
+    const lat = parseFloat(latValue);
+    const lng = parseFloat(lngValue);
+
+    if (
+      !isNaN(lat) &&
+      !isNaN(lng) &&
+      lat >= -90 &&
+      lat <= 90 &&
+      lng >= -180 &&
+      lng <= 180
+    ) {
+      console.log('Updating map location to:', { lat, lng });
+
+      // Force change detection by creating a completely new object
+      this.initialMapLocation = {
+        lat: Number(lat.toFixed(6)),
+        lng: Number(lng.toFixed(6)),
+      };
+
+      // Trigger change detection manually if needed
+      // this.cdr.detectChanges(); // Uncomment if you inject ChangeDetectorRef
+    }
+  }
   // Method to submit the form
   onSubmit(): void {
     if (this.serviceForm.invalid) {

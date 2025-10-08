@@ -7,7 +7,7 @@
         <button type="button" class="btn btn-link text-decoration-none p-0 me-3" (click)="goBack()">
           <i class="fas fa-arrow-left text-primary fs-5"></i>
         </button>
-        <h2 class="mb-0 text-dark fw-bold">{{ 'addService.header.title' | translate }}</h2>
+        <h2 class="mb-0 text-dark fw-bold">{{ 'editService.header.title' | translate }}</h2>
       </div>
 
       <!-- Form Card -->
@@ -108,47 +108,19 @@
               <!-- Manual Location Inputs -->
               <div class="row g-3">
 
-                <!-- 
-                <div class="col-md-6">
-                  <label class="form-label fw-semibold text-dark">المنطقة</label>
-                  <input type="text" class="form-control form-control-lg" formControlName="area"
-                    placeholder="مثلاً: الدوار السابع">
-                </div> -->
-
                 <div class="col-md-6">
                   <label class="form-label fw-semibold text-dark">خط العرض (Latitude)</label>
                   <input type="number" class="form-control form-control-lg" formControlName="lat" placeholder="31.9566"
-                    step="any" readonly>
-                  <small class="text-muted">سيتم ملؤها تلقائياً من الخريطة</small>
+                    step="0.000001" [min]="-90" [max]="90" (input)="updateMapFromCoordinates()">
+                  <small class="text-muted">{{ 'addService.form.location.latitude.description' | translate }}</small>
                 </div>
 
                 <div class="col-md-6">
                   <label class="form-label fw-semibold text-dark">خط الطول (Longitude)</label>
                   <input type="number" class="form-control form-control-lg" formControlName="lng" placeholder="35.9457"
-                    step="any" readonly>
-                  <small class="text-muted">سيتم ملؤها تلقائياً من الخريطة</small>
+                    step="0.000001" [min]="-180" [max]="180" (input)="updateMapFromCoordinates()">
+                  <small class="text-muted">{{ 'addService.form.location.longitude.description' | translate }}</small>
                 </div>
-                <!-- <div class="col-md-6">
-                  <label class="form-label fw-semibold text-dark">المدينة</label>
-                  <input type="text" class="form-control form-control-lg" formControlName="city"
-                    placeholder="مثلاً: عمان">
-                </div> -->
-                <!-- <div class="col-md-6">
-                  <label class="form-label fw-semibold text-dark">
-                    {{ 'addService.form.location.city.label' | translate }}
-                  </label>
-                  <select class="form-select form-select-lg" formControlName="city"
-                    [class.is-invalid]="isFieldInvalid('city')">
-                    <option value="">{{ 'addService.form.location.city.placeholder' | translate }}</option>
-                    <option *ngFor="let city of translatedCities" [value]="city.value">
-                      {{city.label}}
-                    </option>
-                  </select>
-                  <div class="invalid-feedback" *ngIf="isFieldInvalid('city')">
-                    {{ 'addService.form.location.city.error' | translate }}
-                  </div>
-                </div> -->
-                <!-- Replace the existing city inputs with this single dropdown -->
                 <div class="col-md-6">
                   <label class="form-label fw-semibold text-dark">
                     {{ 'addService.form.location.city.label' | translate }}
@@ -234,6 +206,19 @@
               </div>
             </div>
             <!-- Media Upload Section -->
+            <!-- Add this info section before the media upload inputs -->
+            <div class="alert alert-info mb-4">
+              <h6 class="mb-2">{{ 'addService.form.media.limits.imageTitle' | translate }}</h6>
+              <p class="mb-2 small">{{ 'addService.form.media.limits.imageDescription' | translate }}</p>
+
+              <h6 class="mb-2 mt-3">{{ 'addService.form.media.limits.videoTitle' | translate }}</h6>
+              <p class="mb-2 small">{{ 'addService.form.media.limits.videoDescription' | translate }}</p>
+
+              <p class="mb-0 small text-warning">
+                <i class="fas fa-exclamation-triangle me-1"></i>
+                {{ 'addService.form.media.limits.quotaWarning' | translate }}
+              </p>
+            </div>
             <div class="border-top pt-4 mb-4">
               <h5 class="text-dark fw-bold mb-3">الصور والفيديوهات</h5>
 
@@ -331,18 +316,18 @@
             <div class="d-flex justify-content-end gap-2 mt-4">
               <button type="button" class="btn btn-outline-secondary btn-lg px-4" (click)="goBack()"
                 [disabled]="isLoading || isUploading">
-                {{ 'addService.form.buttons.cancel' | translate }}
+                {{ 'editService.form.buttons.cancel' | translate }}
               </button>
               <button type="submit" class="btn btn-primary btn-lg px-4" [disabled]="isLoading || isUploading">
                 <span *ngIf="isLoading || isUploading" class="spinner-border spinner-border-sm me-2"></span>
                 <span *ngIf="isLoading">
-                  {{ 'addService.form.buttons.saving' | translate }}
+                  {{ 'editService.form.buttons.saving' | translate }}
                 </span>
                 <span *ngIf="isUploading">
-                  {{ 'addService.form.buttons.uploading' | translate }}
+                  {{ 'editService.form.buttons.uploading' | translate }}
                 </span>
                 <span *ngIf="!isLoading && !isUploading">
-                  {{ 'addService.form.buttons.submit' | translate }}
+                  {{ 'editService.form.buttons.submit' | translate }}
                 </span>
               </button>
             </div>
@@ -358,5 +343,5 @@
   <div class="spinner-border text-primary" role="status">
     <span class="visually-hidden">{{ 'addService.loading.text' | translate }}</span>
   </div>
-  <p class="mt-3 text-muted">{{ 'addService.loading.dashboard' | translate }}</p>
+  <p class="mt-3 text-muted">{{ 'addService.loading.message' | translate }}</p>
 </div>

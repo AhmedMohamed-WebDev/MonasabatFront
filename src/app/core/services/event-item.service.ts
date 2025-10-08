@@ -1,7 +1,13 @@
 // src/app/core/services/event-item.service.ts
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import {
+  HttpClient,
+  HttpHeaders,
+  HttpEventType,
+  HttpResponse,
+} from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
 import {
   EventItem,
   CreateEventItemRequest,
@@ -66,6 +72,9 @@ export class EventItemService {
       formData,
       {
         headers,
+        reportProgress: true,
+        observe: 'body',
+        responseType: 'json' as const,
       }
     );
   }
