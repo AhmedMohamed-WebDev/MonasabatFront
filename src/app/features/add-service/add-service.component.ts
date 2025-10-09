@@ -624,7 +624,7 @@ export class AddServiceComponent implements OnInit {
           lng: formValues.lng ? Number(formValues.lng) : undefined,
         },
       },
-      availableDates: this.availableDatesArray.value,
+      // availableDates deprecated - backend now uses availability (dateRange + excludedDates)
       availability: {
         dateRange: {
           from: formValues.availability.dateRange.from,

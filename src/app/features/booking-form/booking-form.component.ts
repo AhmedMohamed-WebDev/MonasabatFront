@@ -42,7 +42,7 @@ export class BookingFormComponent implements OnInit {
   bookingForm: BookingRequest = {
     eventItemId: '',
     eventDate: '',
-    numberOfPeople: 50,
+    numberOfPeople: 1,
     phone: '',
     name: '',
   };
@@ -91,10 +91,9 @@ export class BookingFormComponent implements OnInit {
         this.eventItem = item;
         this.loading = false;
 
-        // Set default number of people to minimum capacity
-        if (this.eventItem.minCapacity) {
-          this.bookingForm.numberOfPeople = this.eventItem.minCapacity;
-        }
+        // Set default number of people to minimum capacity if available, otherwise 1
+        const minCap = this.eventItem.minCapacity ?? 1;
+        this.bookingForm.numberOfPeople = minCap;
       },
       error: (err) => {
         console.error('Error loading event item:', err);
@@ -188,9 +187,12 @@ export class BookingFormComponent implements OnInit {
       return false;
     }
 
-    // Check capacity limits
+    // Check capacity limits only when capacity values are defined on the service
     if (this.eventItem) {
-      if (this.bookingForm.numberOfPeople < this.eventItem.minCapacity) {
+      if (
+        this.eventItem.minCapacity != null &&
+        this.bookingForm.numberOfPeople < this.eventItem.minCapacity
+      ) {
         this.error = this.translationService.instant(
           'booking.validation.minCapacity',
           {
@@ -200,7 +202,10 @@ export class BookingFormComponent implements OnInit {
         return false;
       }
 
-      if (this.bookingForm.numberOfPeople > this.eventItem.maxCapacity) {
+      if (
+        this.eventItem.maxCapacity != null &&
+        this.bookingForm.numberOfPeople > this.eventItem.maxCapacity
+      ) {
         this.error = this.translationService.instant(
           'booking.validation.maxCapacity',
           {
@@ -240,10 +245,38 @@ export class BookingFormComponent implements OnInit {
     if (!this.eventItem || !dateString) return false;
 
     const selectedDate = new Date(dateString);
-    return this.eventItem.availableDates.some((availableDate) => {
-      const available = new Date(availableDate);
-      return available.toDateString() === selectedDate.toDateString();
-    });
+
+    // If availableDates exists, check it first
+    if (
+      this.eventItem.availableDates &&
+      this.eventItem.availableDates.length > 0
+    ) {
+      return this.eventItem.availableDates.some((availableDate) => {
+        const available = new Date(availableDate);
+        return available.toDateString() === selectedDate.toDateString();
+      });
+    }
+
+    // Otherwise, check availability.dateRange + excludedDates
+    const avail = this.eventItem.availability;
+    if (
+      avail &&
+      avail.dateRange &&
+      avail.dateRange.from &&
+      avail.dateRange.to
+    ) {
+      const from = new Date(avail.dateRange.from);
+      const to = new Date(avail.dateRange.to);
+      const excluded = (avail.excludedDates || []).map((d) =>
+        new Date(d).toDateString()
+      );
+
+      if (selectedDate >= from && selectedDate <= to) {
+        return !excluded.includes(selectedDate.toDateString());
+      }
+    }
+
+    return false;
   }
 
   getFormattedDate(date: Date): string {
@@ -280,5 +313,32 @@ export class BookingFormComponent implements OnInit {
   // Helper method to check if current language is RTL
   isRTL(): boolean {
     return this.languageService.isRTL();
+  }
+
+  // Capacity helpers to simplify template bindings and avoid template type errors
+  get minCapacity(): number {
+    return this.eventItem && this.eventItem.minCapacity != null
+      ? this.eventItem.minCapacity
+      : 1;
+  }
+
+  get maxCapacityNumeric(): number {
+    // Used for numeric [max] binding; provide a reasonable upper bound if not specified
+    return this.eventItem && this.eventItem.maxCapacity != null
+      ? this.eventItem.maxCapacity
+      : 1000;
+  }
+
+  get maxCapacityDisplay(): string {
+    return this.eventItem && this.eventItem.maxCapacity != null
+      ? String(this.eventItem.maxCapacity)
+      : '∞';
+  }
+
+  hasCapacityInfo(): boolean {
+    return !!(
+      this.eventItem &&
+      (this.eventItem.minCapacity != null || this.eventItem.maxCapacity != null)
+    );
   }
 }

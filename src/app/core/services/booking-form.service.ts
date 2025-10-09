@@ -39,11 +39,28 @@ export class BookingFormService {
   getEventItem(id: string): Observable<EventItem> {
     return this.http.get<EventItem>(`${this.apiUrl}/event-items/${id}`).pipe(
       map((response) => {
-        // Ensure availableDates are Date objects
-        if (response.availableDates) {
+        // Normalize availableDates: if backend provides availableDates array, convert to Date[]
+        if (response.availableDates && response.availableDates.length > 0) {
           response.availableDates = response.availableDates.map(
             (date) => new Date(date)
           );
+        } else if (response.availability && response.availability.dateRange) {
+          // If backend provides an availability dateRange, expand it into availableDates (daily)
+          const from = new Date(response.availability.dateRange.from);
+          const to = new Date(response.availability.dateRange.to);
+          const dates: Date[] = [];
+          const excluded = (response.availability.excludedDates || []).map(
+            (d) => new Date(d).toDateString()
+          );
+          for (let d = new Date(from); d <= to; d.setDate(d.getDate() + 1)) {
+            const ds = new Date(d).toDateString();
+            if (!excluded.includes(ds)) {
+              dates.push(new Date(d));
+            }
+          }
+          response.availableDates = dates;
+        } else {
+          response.availableDates = [];
         }
         return response;
       }),
@@ -95,18 +112,18 @@ export class BookingFormService {
   ): Observable<boolean> {
     return this.getEventItem(eventItemId).pipe(
       map((eventItem) => {
-        if (
-          !eventItem.availableDates ||
-          eventItem.availableDates.length === 0
-        ) {
-          return false;
+        const selectedDate = new Date(date);
+
+        // If availableDates array is present/normalized, use it
+        if (eventItem.availableDates && eventItem.availableDates.length > 0) {
+          return eventItem.availableDates.some((availableDate) => {
+            const available = new Date(availableDate);
+            return available.toDateString() === selectedDate.toDateString();
+          });
         }
 
-        const selectedDate = new Date(date);
-        return eventItem.availableDates.some((availableDate) => {
-          const available = new Date(availableDate);
-          return available.toDateString() === selectedDate.toDateString();
-        });
+        // Fallback: if the backend used availability.dateRange but we couldn't expand for some reason, return false
+        return false;
       }),
       catchError(this.handleError)
     );
@@ -147,10 +164,30 @@ export class BookingFormService {
       // Check date availability
       if (bookingData.eventDate) {
         const selectedDate = new Date(bookingData.eventDate);
-        const isAvailable = eventItem.availableDates?.some((availableDate) => {
-          const available = new Date(availableDate);
-          return available.toDateString() === selectedDate.toDateString();
-        });
+
+        let isAvailable = false;
+
+        if (eventItem.availableDates && eventItem.availableDates.length > 0) {
+          isAvailable = eventItem.availableDates.some((availableDate) => {
+            const available = new Date(availableDate);
+            return available.toDateString() === selectedDate.toDateString();
+          });
+        } else if (
+          eventItem.availability &&
+          eventItem.availability.dateRange &&
+          eventItem.availability.dateRange.from &&
+          eventItem.availability.dateRange.to
+        ) {
+          const from = new Date(eventItem.availability.dateRange.from);
+          const to = new Date(eventItem.availability.dateRange.to);
+          const excluded = (eventItem.availability.excludedDates || []).map(
+            (d) => new Date(d).toDateString()
+          );
+
+          if (selectedDate >= from && selectedDate <= to) {
+            isAvailable = !excluded.includes(selectedDate.toDateString());
+          }
+        }
 
         if (!isAvailable) {
           errors.push('Selected date is not available');

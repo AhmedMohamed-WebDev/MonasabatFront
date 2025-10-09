@@ -516,7 +516,7 @@ export class EditServiceComponent implements OnInit {
             lng: formValue.lng ? Number(formValue.lng) : undefined,
           },
         },
-        availableDates: this.availableDates,
+        // availableDates deprecated - use availability.dateRange + excludedDates
         availability: {
           dateRange: {
             from: formValue.availability.dateRange.from,

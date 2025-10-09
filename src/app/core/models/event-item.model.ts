@@ -15,7 +15,7 @@ export interface EventItem {
       lng: number;
     };
   };
-  availableDates: Date[];
+  availableDates?: Date[];
   availability: {
     dateRange: {
       from: Date;

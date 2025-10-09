@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { SearchService } from '../../core/services/search-result.service';
+import { EventItemService } from '../../core/services/event-item.service';
 import { EventItem } from '../../core/models/event-item.model';
 import { LanguageService } from '../../core/services/language.service';
 import { TranslationService } from '../../core/services/translation.service';
@@ -101,6 +102,7 @@ export class SearchResultComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private searchService: SearchService,
+    private eventItemService: EventItemService,
     private translate: TranslateService,
     private languageService: LanguageService,
     private translationService: TranslationService
@@ -406,12 +408,11 @@ export class SearchResultComponent implements OnInit {
       // Availability filter: check if service is available on selected date
       const availabilityMatch =
         !this.filters.availableOnDate ||
-        (item.availableDates &&
-          item.availableDates.some(
-            (date) =>
-              new Date(date).toDateString() ===
-              new Date(this.filters.availableOnDate).toDateString()
-          ));
+        // Prefer new availability format via EventItemService helper
+        this.eventItemService.isDateAvailable(
+          item,
+          new Date(this.filters.availableOnDate)
+        );
 
       return (
         subcategoryMatch && priceMatch && locationMatch && availabilityMatch

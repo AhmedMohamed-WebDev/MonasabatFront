@@ -158,16 +158,30 @@
             </div>
           </div>
 
-          <!-- Available Dates -->
-          <div class="dates-section" *ngIf="service.availableDates?.length">
+          <!-- Available Dates (new availability preferred) -->
+          <div class="dates-section" *ngIf="service">
             <h3 class="section-title">📅 {{ 'serviceDetails.dates.title' | translate }}</h3>
             <div class="dates-grid">
-              <div class="date-item" *ngFor="let date of service.availableDates.slice(0, 6)">
-                {{formatDate(date)}}
-              </div>
-              <div class="date-item more-dates" *ngIf="service.availableDates.length > 6">
-                {{ 'serviceDetails.dates.moreDates' | translate: {count: service.availableDates.length - 6} }}
-              </div>
+              <ng-container *ngIf="service.availability?.dateRange; else legacyDates">
+                <div class="date-item">
+                  {{ formatDate(service.availability.dateRange.from) }} - {{
+                  formatDate(service.availability.dateRange.to) }}
+                </div>
+                <div class="date-item" *ngIf="service.availability.excludedDates?.length">
+                  <small class="text-muted">{{ 'serviceDetails.dates.excluded' | translate }}</small>
+                  <div *ngFor="let d of service.availability.excludedDates" class="date-item">
+                    {{ formatDate(d) }}
+                  </div>
+                </div>
+              </ng-container>
+              <ng-template #legacyDates>
+                <div class="date-item" *ngFor="let date of service.availableDates?.slice(0, 6)">
+                  {{formatDate(date)}}
+                </div>
+                <div class="date-item more-dates" *ngIf="service.availableDates?.length > 6">
+                  {{ 'serviceDetails.dates.moreDates' | translate: {count: (service.availableDates?.length || 0) - 6} }}
+                </div>
+              </ng-template>
             </div>
           </div>
 

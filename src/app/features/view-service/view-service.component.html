@@ -112,15 +112,31 @@
                     <div class="info-card mt-4">
                         <h3>Available Dates</h3>
                         <div class="dates-list">
-                            <p *ngIf="!service.availableDates?.length" class="text-muted">
-                                No dates specified
-                            </p>
-                            <ul class="list-unstyled" *ngIf="service.availableDates?.length">
-                                <li *ngFor="let date of service.availableDates">
-                                    <i class="fas fa-calendar-alt me-2"></i>
-                                    {{ date | date:'mediumDate' }}
-                                </li>
-                            </ul>
+                            <ng-container *ngIf="service">
+                                <div *ngIf="service.availability?.dateRange; else legacyDates">
+                                    <p class="mb-1"><strong>From:</strong> {{ service.availability.dateRange.from |
+                                        date:'mediumDate' }}</p>
+                                    <p class="mb-1"><strong>To:</strong> {{ service.availability.dateRange.to |
+                                        date:'mediumDate' }}</p>
+                                    <div *ngIf="service.availability.excludedDates?.length">
+                                        <p class="mt-2 mb-1"><strong>Excluded:</strong></p>
+                                        <ul class="list-unstyled">
+                                            <li *ngFor="let d of service.availability.excludedDates">
+                                                <i class="fas fa-calendar-alt me-2"></i>{{ d | date:'mediumDate' }}
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <ng-template #legacyDates>
+                                    <p *ngIf="!service.availableDates?.length" class="text-muted">No dates specified</p>
+                                    <ul class="list-unstyled" *ngIf="service.availableDates?.length">
+                                        <li *ngFor="let date of service.availableDates">
+                                            <i class="fas fa-calendar-alt me-2"></i>
+                                            {{ date | date:'mediumDate' }}
+                                        </li>
+                                    </ul>
+                                </ng-template>
+                            </ng-container>
                         </div>
                     </div>
                 </div>
