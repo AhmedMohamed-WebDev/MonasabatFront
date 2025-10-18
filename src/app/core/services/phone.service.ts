@@ -16,6 +16,9 @@ export class PhoneService {
       cleaned = '+962' + cleaned.substring(1);
     } else if (cleaned.startsWith('7')) {
       cleaned = '+962' + cleaned;
+    } else if (cleaned.startsWith('00962')) {
+      // convert 00962... to +962...
+      cleaned = '+' + cleaned.substring(2);
     } else if (!cleaned.startsWith('+962')) {
       throw new Error(PHONE_CONFIG.ERROR_MESSAGES.FORMAT);
     }
@@ -24,7 +27,8 @@ export class PhoneService {
   }
 
   validatePhoneNumber(phone: string): boolean {
-    const regex = /^\+962[7][7-9]\d{7}$/;
+    // Accept +9627[5-9]xxxxxxx
+    const regex = /^\+9627[5-9]\d{7}$/;
     return regex.test(phone);
   }
 

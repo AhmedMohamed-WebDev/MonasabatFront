@@ -26,17 +26,25 @@ export class PhoneUtils {
     if (!phone) return '';
 
     // Remove any non-digit characters
-    const cleanPhone = phone.replace(/\D/g, '');
+    let cleanPhone = phone.replace(/\D/g, '');
 
-    if (cleanPhone.length === 10 && cleanPhone.startsWith('79')) {
-      // Jordan mobile number format
+    // Accept numbers that may include leading 00 (00962...) and normalize
+    if (cleanPhone.startsWith('00')) {
+      cleanPhone = cleanPhone.substring(2);
+    }
+
+    // If user entered full international (9627XXXXXXXX) without plus, keep as-is
+    if (cleanPhone.startsWith('962')) {
+      cleanPhone = cleanPhone.substring(3);
+    }
+
+    // At this point, cleanPhone should be the local part (9 digits for Jordan mobiles)
+    if (cleanPhone.length === 9 && cleanPhone.startsWith('7')) {
+      // Format as +962 7X XXX XXXX
       return `${countryCode} ${cleanPhone.substring(
         0,
-        2
-      )} ${cleanPhone.substring(2, 5)} ${cleanPhone.substring(
-        5,
-        7
-      )} ${cleanPhone.substring(7)}`;
+        1
+      )} ${cleanPhone.substring(1, 4)} ${cleanPhone.substring(4)}`;
     }
 
     return phone;
@@ -58,8 +66,12 @@ export class PhoneUtils {
    */
   static isValidJordanMobile(phone: string): boolean {
     if (!phone) return false;
-
-    const cleanPhone = phone.replace(/\D/g, '');
-    return cleanPhone.length === 10 && cleanPhone.startsWith('79');
+    let cleanPhone = phone.replace(/\D/g, '');
+    // normalize leading 00 -> remove the 00
+    if (cleanPhone.startsWith('00')) cleanPhone = cleanPhone.substring(2);
+    // remove leading country code if present
+    if (cleanPhone.startsWith('962')) cleanPhone = cleanPhone.substring(3);
+    // now check local form: 9 digits starting with 7 and operator 5-9
+    return cleanPhone.length === 9 && /^7[5-9]\d{7}$/.test(cleanPhone);
   }
 }

@@ -219,16 +219,20 @@ export class JoinComponent {
 
       const country = this.joinForm?.get('phoneCountry')?.value;
 
-      // Jordan phone validation
-      const jordanRegex =
-        /^((?:(?:\+962|0)(?:7(?:7|8|9)))|(?:7(?:7|8|9)))\d{7}$/;
+      // Jordan phone validation — accept +962, 962, 00962, 07..., or local 7... forms
+      // Accept operator second digit 5-9 (75,76,77,78,79)
+      const jordanRegex = /^(?:(?:\+962|00962|962)7[5-9]\d{7}|0?7[5-9]\d{7})$/;
       // Kuwait phone validation (accepts numbers starting with +965 or 5/6/9 followed by 7 digits)
       const kuwaitRegex = /^((?:(?:\+965|0)(?:5|6|9))|(?:5|6|9))\d{7}$/;
 
+      // Normalize value by removing spaces, dashes and parentheses
+      const rawVal = (control.value || '').toString().trim();
+      const normalized = rawVal.replace(/[\s\-()]/g, '');
+
       const isValid =
         country === 'jordan'
-          ? jordanRegex.test(control.value)
-          : kuwaitRegex.test(control.value);
+          ? jordanRegex.test(normalized)
+          : kuwaitRegex.test(normalized);
 
       return isValid ? null : { pattern: true };
     };
