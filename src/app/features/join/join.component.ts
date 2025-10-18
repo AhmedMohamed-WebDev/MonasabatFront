@@ -14,10 +14,8 @@ import { AuthService } from '../../core/services/auth.service';
 import { Router } from '@angular/router';
 import { JoinStatus } from '../../core/models/join.model';
 import { TranslateService, TranslateModule } from '@ngx-translate/core';
-import {
-  EVENT_CATEGORIES,
-  CategoryConfig,
-} from '../../core/models/constants/categories.const';
+import { CategoryConfig } from '../../core/models/constants/categories.const';
+import { TranslationService } from '../../core/services/translation.service';
 
 @Component({
   selector: 'app-join',
@@ -69,7 +67,8 @@ export class JoinComponent {
     { value: 'Other', label: 'Other' },
   ];
 
-  categories: CategoryConfig[] = EVENT_CATEGORIES;
+  // Use service categories for the join form
+  categories: CategoryConfig[] = [];
   showOtherServiceInput = false;
 
   constructor(
@@ -77,9 +76,11 @@ export class JoinComponent {
     private joinService: JoinService,
     private authService: AuthService,
     private router: Router,
-    private translate: TranslateService
+    private translate: TranslateService,
+    private translationService: TranslationService
   ) {
     this.joinForm = this.fb.group({
+      country: ['jordan', Validators.required],
       name: ['', [Validators.required, Validators.minLength(2)]],
       phoneCountry: ['jordan', Validators.required],
       phone: ['', [Validators.required, this.phoneValidator()]],
@@ -106,6 +107,22 @@ export class JoinComponent {
     this.joinForm.get('phoneCountry')?.valueChanges.subscribe(() => {
       this.joinForm.get('phone')?.updateValueAndValidity();
     });
+
+    // When country changes, reset city and update validators if needed
+    this.joinForm.get('country')?.valueChanges.subscribe((country) => {
+      // Clear city when switching countries
+      this.joinForm.get('city')?.setValue('');
+      this.joinForm.get('city')?.updateValueAndValidity();
+    });
+  }
+
+  ngOnInit(): void {
+    // populate service categories
+    this.categories = this.translationService.getTranslatedServiceCategories();
+    this.translate.onLangChange.subscribe(() => {
+      this.categories =
+        this.translationService.getTranslatedServiceCategories();
+    });
   }
 
   onSubmit() {
@@ -116,6 +133,7 @@ export class JoinComponent {
       // Get form values and explicitly include phoneCountry
       const formData = {
         ...this.joinForm.value,
+        country: this.joinForm.get('country')?.value || 'jordan',
         phoneCountry: this.joinForm.get('phoneCountry')?.value || 'jordan',
       };
 

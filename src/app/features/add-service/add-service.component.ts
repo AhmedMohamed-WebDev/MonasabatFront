@@ -14,11 +14,11 @@ import { debounceTime, distinctUntilChanged, filter } from 'rxjs/operators';
 import { EventItemService } from '../../core/services/event-item.service';
 import { CreateEventItemRequest } from '../../core/models/event-item.model';
 import {
-  EVENT_CATEGORIES,
   CategoryConfig,
   isContactOnlyService,
 } from '../../core/models/constants/categories.const';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslationService } from '../../core/services/translation.service';
 import { NotificationService } from '../../core/services/notification.service';
 import {
   MapPickerComponent,
@@ -45,7 +45,7 @@ export class AddServiceComponent implements OnInit {
   selectedImages: any[] = [];
   selectedVideos: any[] = [];
   availableDatesArray!: FormArray;
-  categories = EVENT_CATEGORIES;
+  categories: CategoryConfig[] = [];
   selectedCategory?: CategoryConfig;
   subcategories: { value: string; label: string }[] = [];
   initialMapLocation?: MapLocation;
@@ -84,8 +84,19 @@ export class AddServiceComponent implements OnInit {
     private eventItemService: EventItemService,
     private router: Router,
     private translate: TranslateService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private translationService: TranslationService
   ) {}
+
+  // Validator to ensure a FormControl array has at least minLength items
+  arrayMinLengthValidator(minLength: number) {
+    return (control: any) => {
+      if (!control || !control.value) return { minLengthArray: true };
+      const val = control.value;
+      if (!Array.isArray(val)) return { minLengthArray: true };
+      return val.length >= minLength ? null : { minLengthArray: true };
+    };
+  }
 
   ngOnInit(): void {
     this.initForm();
@@ -116,15 +127,9 @@ export class AddServiceComponent implements OnInit {
   }
 
   private updateTranslations(): void {
-    // Update categories with translations
-    this.translatedCategories = this.categories.map((category) => ({
-      ...category,
-      label: this.translate.instant(`categories.${category.value}`),
-      subcategories: category.subcategories.map((sub) => ({
-        ...sub,
-        label: this.translate.instant(`subcategories.${sub.value}`),
-      })),
-    }));
+    // Update categories with translations (service categories only)
+    this.translatedCategories =
+      this.translationService.getTranslatedServiceCategories();
 
     // Update cities with translations
     this.translatedCities = this.cities.map((city) => {
@@ -243,14 +248,21 @@ export class AddServiceComponent implements OnInit {
       name: ['', [Validators.required, Validators.minLength(3)]],
       description: [''],
       category: ['', Validators.required],
-      subcategory: ['', Validators.required],
-      price: ['', [Validators.required, Validators.min(1)]],
+      // support multiple subcategories (array of strings)
+      subcategories: [[], [this.arrayMinLengthValidator(1)]],
+      // price optional if supplier chooses 'Ask for price'
+      askForPrice: [false],
+      price: ['', [Validators.min(0)]],
       city: ['', Validators.required],
       area: [''],
       lat: [''],
       lng: [''],
       minCapacity: [''],
       maxCapacity: [''],
+      social: this.fb.group({
+        instagram: [''],
+        facebook: [''],
+      }),
       availableDates: this.availableDatesArray,
       availability: this.fb.group({
         dateRange: this.fb.group({
@@ -284,10 +296,10 @@ export class AddServiceComponent implements OnInit {
           this.selectedCategory = undefined;
         }
 
-        // Update subcategory control
-        const subcategoryControl = this.serviceForm.get('subcategory');
-        if (subcategoryControl) {
-          subcategoryControl.patchValue('');
+        // Update subcategories control (clear selection when category changes)
+        const subcategoriesControl = this.serviceForm.get('subcategories');
+        if (subcategoriesControl) {
+          subcategoriesControl.patchValue([]);
         }
       });
     }
@@ -310,10 +322,10 @@ export class AddServiceComponent implements OnInit {
       this.selectedCategory = undefined;
     }
 
-    // Update subcategory control
-    const subcategoryControl = this.serviceForm.get('subcategory');
-    if (subcategoryControl) {
-      subcategoryControl.patchValue('');
+    // Update subcategories control
+    const subcategoriesControl = this.serviceForm.get('subcategories');
+    if (subcategoriesControl) {
+      subcategoriesControl.patchValue([]);
     }
   }
 
@@ -608,12 +620,27 @@ export class AddServiceComponent implements OnInit {
 
     // Create the request object from form values
     const formValues = this.serviceForm.value;
+    const selectedSubcategories: string[] = Array.isArray(
+      formValues.subcategories
+    )
+      ? formValues.subcategories
+      : formValues.subcategories
+      ? [formValues.subcategories]
+      : [];
+
     const request: CreateEventItemRequest = {
       name: formValues.name,
       description: formValues.description,
       category: formValues.category,
-      subcategory: formValues.subcategory,
-      price: formValues.price,
+      // legacy single subcategory field kept for backward compatibility
+      subcategory:
+        selectedSubcategories.length > 0 ? selectedSubcategories[0] : '',
+      // new array field sent in parallel (backend should accept or ignore)
+      // @ts-ignore - CreateEventItemRequest may not include subcategories yet
+      subcategories: selectedSubcategories,
+      price: formValues.askForPrice ? undefined : formValues.price,
+      priceType: formValues.askForPrice ? 'not_provided' : 'fixed',
+      priceAvailable: !formValues.askForPrice,
       minCapacity: formValues.minCapacity,
       maxCapacity: formValues.maxCapacity,
       location: {
@@ -631,6 +658,10 @@ export class AddServiceComponent implements OnInit {
           to: formValues.availability.dateRange.to,
         },
         excludedDates: formValues.availability.excludedDates,
+      },
+      social: {
+        instagram: this.normalizeUrl(formValues.social?.instagram),
+        facebook: this.normalizeUrl(formValues.social?.facebook),
       },
     };
 
@@ -660,6 +691,23 @@ export class AddServiceComponent implements OnInit {
         );
       },
     });
+  }
+
+  // Normalize social URL: trim and ensure protocol (https) if looks like a domain
+  private normalizeUrl(url?: string): string | undefined {
+    if (!url) return undefined;
+    let v = String(url).trim();
+    if (!v) return undefined;
+    // If user provided username-like input (starts with '@') -> convert to instagram URL
+    if (v.startsWith('@')) {
+      v = v.substring(1);
+      return `https://instagram.com/${v}`;
+    }
+    // If missing protocol, prepend https://
+    if (!/^https?:\/\//i.test(v)) {
+      v = 'https://' + v;
+    }
+    return v;
   }
 
   // Helper method to upload media files
@@ -700,7 +748,53 @@ export class AddServiceComponent implements OnInit {
   // Check if the selected service is contact-only
   isContactOnlyService(): boolean {
     const category = this.serviceForm.get('category')?.value;
-    const subcategory = this.serviceForm.get('subcategory')?.value;
-    return isContactOnlyService(category, subcategory);
+    const subs = this.serviceForm.get('subcategories')?.value;
+    const primary = Array.isArray(subs) ? subs[0] : subs;
+    return isContactOnlyService(category, primary);
+  }
+
+  // Toggle selection of a subcategory by value
+  toggleSubcategory(value: string): void {
+    const control = this.serviceForm.get('subcategories');
+    if (!control) return;
+    const current: string[] = Array.isArray(control.value) ? control.value : [];
+    const idx = current.indexOf(value);
+    if (idx === -1) {
+      control.patchValue([...current, value]);
+    } else {
+      const next = current.slice(0, idx).concat(current.slice(idx + 1));
+      control.patchValue(next);
+    }
+  }
+
+  // Convenience for toggling by label (used on chip close button)
+  toggleSubcategoryByValue(labelOrValue: string, isLabel = false): void {
+    // If a label was passed, map it back to the subcategory value
+    let value = labelOrValue;
+    if (isLabel) {
+      const found = this.subcategories.find(
+        (s) => s.label === labelOrValue || s.value === labelOrValue
+      );
+      if (found) value = found.value;
+    }
+    this.toggleSubcategory(value);
+  }
+
+  isSubcategorySelected(value: string): boolean {
+    const control = this.serviceForm.get('subcategories');
+    if (!control) return false;
+    const current: string[] = Array.isArray(control.value) ? control.value : [];
+    return current.includes(value);
+  }
+
+  // Return selected subcategory labels (translated)
+  getSelectedSubcategoryLabels(): string[] {
+    const control = this.serviceForm.get('subcategories');
+    if (!control) return [];
+    const current: string[] = Array.isArray(control.value) ? control.value : [];
+    return current
+      .map((v) => this.subcategories.find((s) => s.value === v))
+      .filter(Boolean)
+      .map((s: any) => s.label);
   }
 }

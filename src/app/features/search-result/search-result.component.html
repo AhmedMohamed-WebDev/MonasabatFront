@@ -127,12 +127,11 @@
 
       <div class="mb-3" *ngIf="selectedCategory" id="fs-subcategory">
         <label class="form-label small">{{ 'search.filters.serviceTypes' | translate }}</label>
-        <select class="form-select form-select-sm" [ngModel]="currentParams.subcategory"
-          (ngModelChange)="onSubcategoryChange($event)">
-          <option value="">{{ 'search.filters.clearAll' | translate }}</option>
-          <option *ngFor="let sub of selectedCategory?.subcategories" [value]="sub.value">{{
-            getSubcategoryLabel(sub.value) }}</option>
-        </select>
+        <app-multi-select [options]="(selectedCategory && selectedCategory.subcategories) || []"
+          [selected]="filters.selectedSubcategories" (selectedChange)="onSubcategoryChange($event)"
+          [placeholder]="'search.filters.serviceTypes' | translate">
+        </app-multi-select>
+        <small class="text-muted">{{ 'search.filters.multiSelectInfo' | translate }}</small>
       </div>
 
       <div class="mb-3" id="fs-city">
@@ -190,12 +189,11 @@
 
         <div class="filter-section" *ngIf="selectedCategory">
           <h6 class="filter-title">{{ 'search.filters.serviceTypes' | translate }}</h6>
-          <select class="form-select form-select-sm" [ngModel]="currentParams.subcategory"
-            (ngModelChange)="onSubcategoryChange($event)">
-            <option value="">{{ 'search.filters.clearAll' | translate }}</option>
-            <option *ngFor="let sub of selectedCategory?.subcategories" [value]="sub.value">{{
-              getSubcategoryLabel(sub.value) }}</option>
-          </select>
+          <app-multi-select [options]="(selectedCategory && selectedCategory.subcategories) || []"
+            [selected]="filters.selectedSubcategories" (selectedChange)="onSubcategoryChange($event)"
+            [placeholder]="'search.filters.serviceTypes' | translate">
+          </app-multi-select>
+          <small class="text-muted">{{ 'search.filters.multiSelectInfo' | translate }}</small>
         </div>
 
         <div class="filter-section">
@@ -343,7 +341,8 @@
             <div class="service-details">
               <div class="service-header">
                 <h5 class="service-name">
-                  <i class="me-2" [ngClass]="getServiceIconClass(service.category, service.subcategory)"></i>
+                  <i class="me-2"
+                    [ngClass]="getServiceIconClass(service.category, getPrimarySubcategory(service.subcategory))"></i>
                   {{ service.name }}
                 </h5>
                 <span class="service-category badge bg-light text-dark">
@@ -369,13 +368,17 @@
 
               <div class="service-footer">
                 <div class="price">
-                  <span class="price-amount">JOD {{ service.price }}</span>
-                  <small class="text-muted">{{ 'search.results.perBooking' | translate }}</small>
+                  <span class="price-amount">{{ getPriceLabel(service) }}</span>
+                  <small class="text-muted" *ngIf="service.price !== undefined && service.price !== null">{{
+                    'search.results.perBooking' | translate }}</small>
                 </div>
 
-                <!-- Show contact-only indicator but keep card clickable -->
-                <div class="service-status" *ngIf="isContactOnly(service)">
-                  <span class="badge bg-info">📞 Contact Required</span>
+                <!-- If price is missing show Ask for price (and service is treated as contact-only). Otherwise, if category is contact-only show contact badge -->
+                <div class="service-status">
+                  <span *ngIf="isPriceMissing(service)" class="badge bg-warning text-dark">💬 {{ 'search.askForPrice' |
+                    translate }}</span>
+                  <span *ngIf="!isPriceMissing(service) && isContactOnly(service)" class="badge bg-info">📞 {{
+                    'search.contactRequired' | translate }}</span>
                 </div>
               </div>
 

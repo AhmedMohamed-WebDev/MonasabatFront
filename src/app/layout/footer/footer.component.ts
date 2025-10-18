@@ -66,7 +66,10 @@ import { TranslateModule } from '@ngx-translate/core';
               <li>
                 <i class="fas fa-phone me-2"></i>
                 <a [href]="'tel:' + phone" class=" text-warning">
-                  {{ 'footer.phoneInfo' | translate }}
+                  <!-- force left-to-right rendering so RTL locales keep phone order -->
+                  <span class="ltr-number" dir="ltr">{{
+                    'footer.phoneInfo' | translate
+                  }}</span>
                 </a>
               </li>
               <li>
@@ -189,6 +192,10 @@ import { TranslateModule } from '@ngx-translate/core';
       }
       [dir='rtl'] .footer .social-link:last-child {
         margin-left: 0;
+      }
+      .ltr-number {
+        direction: ltr;
+        unicode-bidi: isolate; /* keep numbers in their original LTR order inside RTL text */
       }
     `,
   ],

@@ -6,6 +6,7 @@ import { EventItem } from '../../core/models/event-item.model';
 import { AuthService } from '../../core/services/auth.service';
 import { BookingFormService } from '../../core/services/booking-form.service';
 import { LanguageService } from '../../core/services/language.service';
+import { isContactOnlyService } from '../../core/models/constants/categories.const';
 import { TranslationService } from '../../core/services/translation.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
@@ -116,6 +117,36 @@ export class BookingFormComponent implements OnInit {
     }
 
     if (!this.validateForm()) {
+      return;
+    }
+
+    // Prevent booking for contact-only items (no price provided)
+    // If item is contact-only by category, block booking
+    const primarySub = this.eventItem
+      ? (this.eventItem as any).subcategory
+        ? Array.isArray((this.eventItem as any).subcategory)
+          ? (this.eventItem as any).subcategory[0]
+          : (this.eventItem as any).subcategory
+        : undefined
+      : undefined;
+    const contactOnlyByCategory = this.eventItem
+      ? isContactOnlyService(this.eventItem.category, primarySub)
+      : false;
+    const priceMissing =
+      this.eventItem &&
+      (this.eventItem.priceAvailable === false ||
+        this.eventItem.price === undefined ||
+        this.eventItem.price === null ||
+        this.eventItem.priceType === 'not_provided');
+
+    if (contactOnlyByCategory || priceMissing) {
+      this.error =
+        this.translationService.instant('booking.error.priceNotAvailable') ||
+        'Price not available for this service. Please contact the supplier.';
+      setTimeout(
+        () => this.router.navigate(['/service', this.bookingForm.eventItemId]),
+        1500
+      );
       return;
     }
 
@@ -289,7 +320,9 @@ export class BookingFormComponent implements OnInit {
   }
 
   calculateDepositAmount(): number {
-    return this.eventItem ? this.eventItem.price * 0.1 : 0;
+    const price =
+      this.eventItem && this.eventItem.price != null ? this.eventItem.price : 0;
+    return price * 0.1;
   }
 
   goBack() {

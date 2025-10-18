@@ -54,19 +54,33 @@
                 </div>
               </div>
 
-              <!-- Update the subcategory select element -->
+              <!-- Update the subcategory UI to chips + checkbox list -->
               <div class="col-md-6">
                 <label class="form-label fw-semibold text-dark">
                   {{ 'addService.form.basicInfo.serviceType.label' | translate }}
                 </label>
-                <select class="form-select form-select-lg" formControlName="subcategory"
-                  [class.is-invalid]="isFieldInvalid('subcategory')">
-                  <option value="">{{ 'addService.form.basicInfo.serviceType.placeholder' | translate }}</option>
-                  <option *ngFor="let sub of subcategories" [value]="sub.value">
-                    {{sub.label}}
-                  </option>
-                </select>
-                <div class="invalid-feedback" *ngIf="isFieldInvalid('subcategory')">
+
+                <!-- Chips for selected subcategories -->
+                <div class="d-flex flex-wrap gap-2 mb-2">
+                  <span *ngFor="let s of getSelectedSubcategoryLabels()"
+                    class="badge bg-light text-dark border px-3 py-2 d-flex align-items-center">
+                    {{ s }}
+                    <button type="button" class="btn-close btn-close-sm ms-2"
+                      (click)="toggleSubcategoryByValue(s, true)"></button>
+                  </span>
+                  <span *ngIf="getSelectedSubcategoryLabels().length === 0" class="text-muted small">
+                    {{ 'addService.form.basicInfo.serviceType.placeholder' | translate }}
+                  </span>
+                </div>
+
+                <div class="subcategories-checkbox-list">
+                  <div *ngFor="let sub of subcategories" class="form-check">
+                    <input class="form-check-input" type="checkbox" [id]="'sub-' + sub.value"
+                      [checked]="isSubcategorySelected(sub.value)" (change)="toggleSubcategory(sub.value)">
+                    <label class="form-check-label" [for]="'sub-' + sub.value">{{ sub.label }}</label>
+                  </div>
+                </div>
+                <div class="invalid-feedback d-block" *ngIf="isFieldInvalid('subcategories')">
                   {{ 'addService.form.basicInfo.serviceType.error' | translate }}
                 </div>
               </div>
@@ -74,9 +88,15 @@
               <div class="col-md-4">
                 <label class="form-label fw-semibold text-dark">السعر (دينار) *</label>
                 <input type="number" class="form-control form-control-lg" [class.is-invalid]="isFieldInvalid('price')"
-                  formControlName="price" placeholder="0.00" min="1" step="0.01">
+                  formControlName="price" placeholder="0.00" [disabled]="serviceForm.get('askForPrice')?.value"
+                  step="0.01">
                 <div class="invalid-feedback" *ngIf="isFieldInvalid('price')">
                   {{ getFieldError('price') }}
+                </div>
+                <div class="form-check mt-2">
+                  <input class="form-check-input" type="checkbox" id="askForPriceEdit" formControlName="askForPrice">
+                  <label class="form-check-label small" for="askForPriceEdit">{{ 'search.askForPrice' | translate
+                    }}</label>
                 </div>
               </div>
 
@@ -283,6 +303,23 @@
                         <i class="fas fa-times"></i>
                       </button>
                     </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Social Links -->
+              <div class="mb-3" [formGroupName]="'social'">
+                <label class="form-label fw-semibold text-dark">{{ 'addService.form.social.title' | translate }}</label>
+                <div class="row g-2">
+                  <div class="col-md-6">
+                    <input type="url" class="form-control form-control-lg" formControlName="instagram"
+                      placeholder="https://instagram.com/yourpage">
+                    <small class="text-muted">{{ 'addService.form.social.instagramHelp' | translate }}</small>
+                  </div>
+                  <div class="col-md-6">
+                    <input type="url" class="form-control form-control-lg" formControlName="facebook"
+                      placeholder="https://facebook.com/yourpage">
+                    <small class="text-muted">{{ 'addService.form.social.facebookHelp' | translate }}</small>
                   </div>
                 </div>
               </div>

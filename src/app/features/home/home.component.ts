@@ -14,10 +14,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
 import { LanguageService } from '../../core/services/language.service';
 import { TranslationService } from '../../core/services/translation.service';
-import {
-  EVENT_CATEGORIES,
-  CategoryConfig,
-} from '../../core/models/constants/categories.const';
+import { CategoryConfig } from '../../core/models/constants/categories.const';
 import { CATEGORY_TO_SUBCATEGORY_FALLBACK } from '../../core/models/constants/categories.const';
 import { CLIENT_MAIN_CATEGORIES } from '../../core/models/constants/categories.const';
 import { getServiceIconClass } from '../../core/models/constants/categories.const';
@@ -194,8 +191,13 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   private updateTranslations() {
-    // Get translated categories
-    this.eventCategories = this.translationService.getTranslatedCategories();
+    // Get translated categories: separate event types and service categories
+    const eventTypes = this.translationService.getTranslatedEventTypes();
+    const serviceCategories =
+      this.translationService.getTranslatedServiceCategories();
+
+    // Combine into one lookup array for compatibility with existing code
+    this.eventCategories = [...eventTypes, ...serviceCategories];
 
     // Update translated cities
     this.translatedCities = this.cities.map((city) => {
@@ -283,8 +285,10 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
   // For Event Types section
   selectEventType(categoryValue: string) {
-    this.router.navigate(['/search-results'], {
-      queryParams: { category: categoryValue },
+    // Navigate to the all-services page and let that page filter services
+    // related to the chosen event type (e.g., wedding -> halls, chairs, tables...)
+    this.router.navigate(['/all-services'], {
+      queryParams: { eventType: categoryValue },
     });
   }
   // For Services section

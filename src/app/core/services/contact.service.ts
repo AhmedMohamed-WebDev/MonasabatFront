@@ -183,6 +183,40 @@ export class ContactService {
       );
   }
 
+  // Convert a quoted contact request into a booking
+  convertContactRequest(
+    requestId: string,
+    payload: {
+      eventDate: string;
+      numberOfPeople?: number;
+      publishPrice?: boolean;
+    }
+  ): Observable<any> {
+    const endpoint = `/contact-request/requests/${requestId}/convert`;
+
+    if (!this.rateLimiter.canMakeCall(endpoint)) {
+      return throwError(
+        () =>
+          new Error(
+            'Rate limit exceeded. Please wait before making more requests.'
+          )
+      );
+    }
+
+    this.rateLimiter.recordCall(endpoint);
+
+    return this.http
+      .post<any>(`${this.apiUrl}/requests/${requestId}/convert`, payload)
+      .pipe(
+        catchError((error) => {
+          if (error.status === 429) {
+            this.rateLimiter.recordFailedCall(endpoint);
+          }
+          return throwError(() => error);
+        })
+      );
+  }
+
   // Check contact request status between client and supplier
   checkContactRequestStatus(
     clientId: string,

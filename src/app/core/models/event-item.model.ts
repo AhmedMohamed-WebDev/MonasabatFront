@@ -4,7 +4,14 @@ export interface EventItem {
   description: string;
   category: string;
   subcategory?: string;
-  price: number;
+  // Optional price: may be null when supplier didn't provide a price
+  price?: number | null;
+  // Optional currency code, e.g. 'JOD'
+  priceCurrency?: string;
+  // Price type to clarify meaning when price is missing or variable
+  priceType?: 'fixed' | 'from' | 'negotiable' | 'free' | 'not_provided';
+  // Convenience flag for consumers
+  priceAvailable?: boolean;
   minCapacity: number;
   maxCapacity: number;
   location: {
@@ -30,6 +37,10 @@ export interface EventItem {
   };
   images?: string[];
   videos?: string[];
+  social?: {
+    instagram?: string;
+    facebook?: string;
+  };
 }
 
 export interface CreateEventItemRequest {
@@ -37,7 +48,10 @@ export interface CreateEventItemRequest {
   description?: string;
   category: string;
   subcategory?: string;
-  price: number;
+  // price optional on create to allow contact-only services
+  price?: number | null;
+  priceType?: 'fixed' | 'from' | 'negotiable' | 'free' | 'not_provided';
+  priceAvailable?: boolean;
   location: {
     city?: string;
     area?: string;
@@ -56,6 +70,10 @@ export interface CreateEventItemRequest {
   };
   minCapacity?: number;
   maxCapacity?: number;
+  social?: {
+    instagram?: string;
+    facebook?: string;
+  };
 }
 
 export interface UpdateEventItemRequest

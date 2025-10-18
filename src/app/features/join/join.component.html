@@ -59,23 +59,30 @@
 
             <!-- City Field -->
             <div class="mb-3">
+              <label for="country" class="form-label">{{ 'join.form.labels.country' | translate }} *</label>
+              <select id="country" class="form-select mb-2"
+                [class.is-invalid]="joinForm.get('country')?.invalid && joinForm.get('country')?.touched"
+                formControlName="country">
+                <option value="jordan">{{ 'cities.jordan.title' | translate }}</option>
+                <option value="kuwait">{{ 'cities.kuwait.title' | translate }}</option>
+              </select>
+
               <label for="city" class="form-label">{{ 'join.form.labels.city' | translate }} *</label>
               <select id="city" class="form-select"
                 [class.is-invalid]="joinForm.get('city')?.invalid && joinForm.get('city')?.touched"
                 formControlName="city">
                 <option value="">{{ 'join.form.placeholders.city' | translate }}</option>
-                <!-- Jordan Cities -->
-                <optgroup [label]="'cities.jordan.title' | translate">
+                <!-- Only show cities for the selected country -->
+                <ng-container *ngIf="joinForm.get('country')?.value === 'jordan'">
                   <option *ngFor="let city of cities.jordan" [value]="city.value">
-                    {{ 'cities.jordan.' + city.value.toLowerCase() | translate }}
+                    {{ ('cities.jordan.' + city.value.toLowerCase()) | translate }}
                   </option>
-                </optgroup>
-                <!-- Kuwait Cities -->
-                <optgroup [label]="'cities.kuwait.title' | translate">
+                </ng-container>
+                <ng-container *ngIf="joinForm.get('country')?.value === 'kuwait'">
                   <option *ngFor="let city of cities.kuwait" [value]="city.value">
-                    {{ 'cities.kuwait.' + city.value.toLowerCase() | translate }}
+                    {{ ('cities.kuwait.' + city.value.toLowerCase()) | translate }}
                   </option>
-                </optgroup>
+                </ng-container>
               </select>
               <div class="invalid-feedback">
                 {{ getFieldError('city') | translate }}

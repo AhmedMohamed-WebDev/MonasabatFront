@@ -85,6 +85,33 @@ export class ViewServiceComponent implements OnInit {
     return `${amount} JD`;
   }
 
+  // Return price label or bilingual ask-for-price
+  getPriceLabel(): string {
+    if (!this.service) return '';
+    if (
+      this.service.price === undefined ||
+      this.service.price === null ||
+      this.service.priceType === 'not_provided'
+    ) {
+      return this.translate.instant('search.askForPrice');
+    }
+
+    const currency = this.service.priceCurrency || 'JOD';
+    try {
+      const nf = new Intl.NumberFormat(
+        this.translate.currentLang === 'ar' ? 'ar-EG' : 'en-US',
+        {
+          style: 'currency',
+          currency,
+          maximumFractionDigits: 2,
+        }
+      );
+      return nf.format(this.service.price as number);
+    } catch (e) {
+      return `${this.service.price} ${currency}`;
+    }
+  }
+
   formatDate(date: string | Date): string {
     if (!date) return 'N/A';
     const dateObj = typeof date === 'string' ? new Date(date) : date;
@@ -97,15 +124,16 @@ export class ViewServiceComponent implements OnInit {
 
   isContactOnlyService(): boolean {
     if (!this.service) return false;
-    return isContactOnlyService(
-      this.service.category,
-      this.service.subcategory
-    );
+    const sub = (this.service as any).subcategory;
+    const primary = Array.isArray(sub) ? sub[0] : sub;
+    return isContactOnlyService(this.service.category, primary);
   }
 
   getServiceIconClass(): string {
     if (!this.service) return 'fas fa-tag';
-    return getServiceIconClass(this.service.category, this.service.subcategory);
+    const sub = (this.service as any).subcategory;
+    const primary = Array.isArray(sub) ? sub[0] : sub;
+    return getServiceIconClass(this.service.category, primary);
   }
 
   goBack(): void {

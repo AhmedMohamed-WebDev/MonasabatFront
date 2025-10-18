@@ -71,6 +71,7 @@
       "priceRange": "Price Range",
       "minPrice": "Min Price",
       "maxPrice": "Max Price",
+      "multiSelectInfo": "Tip: hold Ctrl (Windows) or Cmd (Mac) to select multiple service types",
       "location": "Location",
       "showNearby": "Show nearby only",
       "availability": "Availability",
@@ -89,6 +90,8 @@
       "perBooking": "per booking",
       "by": "By"
     },
+    "askForPrice": "Ask for price",
+    "contactRequired": "Contact required",
     "loading": "Searching for services...",
     "error": {
       "title": "Oops! Something went wrong",
@@ -701,6 +704,7 @@
         "fullName": "Full Name",
         "phone": "Phone Number",
         "city": "City",
+        "country": "Country",
         "serviceType": "Service Type",
         "notes": "Additional Notes",
         "otherServiceType": "Specify Your Service"
@@ -716,7 +720,8 @@
       "hints": {
         "phone": {
           "jordan": "Enter your number in any format: 07X XXX XXXX, 7X XXX XXXX, or +962 7X XXX XXXX",
-          "kuwait": "Enter your number in any format: 05X XXX XXXX, 5X XXX XXXX, or +965 5X XXX XXXX"
+          "kuwait": "Enter your number in any format: 05X XXX XXXX, 5X XXX XXXX, or +965 5X XXX XXXX",
+          "null": "Please select your country first"
         }
       },
       "validation": {
@@ -737,6 +742,10 @@
         },
         "otherServiceType": {
           "required": "Please specify your service"
+        },
+        "phoneInvalid": {
+          "jordan": "Please enter a valid Jordanian phone number",
+          "kuwait": "Please enter a valid Kuwaiti phone number"
         }
       }
     },
@@ -1015,7 +1024,8 @@
           "label": "Maximum Capacity",
           "placeholder": "e.g. 100",
           "error": "Please enter a valid maximum capacity"
-        }
+        },
+        "askForPrice": "Ask for Price"
       },
       "location": {
         "title": "Location",
@@ -1183,6 +1193,10 @@
     },
     "error": {
       "loadFailed": "Failed to load service details"
+    },
+    "social": {
+      "title": "Reach out to us on social media",
+      "description": "Follow us for updates and promotions"
     }
   },
   "about": {

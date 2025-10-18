@@ -374,6 +374,101 @@ export const EVENT_CATEGORIES: CategoryConfig[] = [
   },
 ];
 
+// Explicit mapping from high-level event types to the top-level service category values
+// This mapping is used when a user selects an event type (e.g., 'wedding') to show
+// the set of service categories that are relevant (e.g., 'halls','chairs','tables',...)
+export const EVENT_TYPE_TO_SERVICE_CATEGORIES: {
+  [eventType: string]: string[];
+} = {
+  wedding: [
+    'halls',
+    'chairs',
+    'tables',
+    'photographers',
+    'hospitality',
+    'flowers',
+    'sound-dj',
+    'event-planner',
+    'wedding-arches',
+    'balloons',
+    'tents-canopies',
+    'cars',
+  ],
+  engagement: [
+    'halls',
+    'photographers',
+    'hospitality',
+    'decoration',
+    'event-planner',
+  ],
+  conference: [
+    'halls',
+    'sound-dj',
+    'photographers',
+    'hospitality',
+    'equipment',
+  ],
+  birthday: ['halls', 'decoration', 'hospitality', 'entertainment-shows'],
+  corporate: ['halls', 'equipment', 'hospitality', 'event-planner'],
+  graduation: ['halls', 'photographers', 'hospitality', 'event-planner'],
+  funeral: [
+    'halls',
+    'hospitality',
+    'flowers',
+    'chairs',
+    'tents-canopies',
+    'transport',
+  ],
+  // Add more explicit mappings as needed
+};
+
+// Define which top-level values represent event types (these are the 'occasion' kinds)
+export const EVENT_TYPE_VALUES = [
+  'wedding',
+  'engagement',
+  'conference',
+  'birthday',
+  'corporate',
+  'graduation',
+  'funeral',
+];
+
+// Derived explicit lists for clarity and easier consumption
+export const EVENT_TYPES: CategoryConfig[] = EVENT_CATEGORIES.filter((c) =>
+  EVENT_TYPE_VALUES.includes(c.value)
+);
+
+export const SERVICE_CATEGORIES: CategoryConfig[] = EVENT_CATEGORIES.filter(
+  (c) => !EVENT_TYPE_VALUES.includes(c.value)
+);
+
+// Helper: return the list of top-level service category values for a given eventType.
+// Falls back to inferring from EVENT_CATEGORIES subcategories if explicit mapping is not present.
+export function getServiceCategoriesForEventType(eventType?: string): string[] {
+  if (!eventType) return [];
+
+  // Prefer explicit mapping first
+  if (EVENT_TYPE_TO_SERVICE_CATEGORIES[eventType]) {
+    return EVENT_TYPE_TO_SERVICE_CATEGORIES[eventType];
+  }
+
+  // Fallback: try to find the event type config and return unique top-level categories
+  const cfg = EVENT_CATEGORIES.find((c) => c.value === eventType);
+  if (!cfg) return [];
+
+  const subcats = (cfg.subcategories || []).map((s) => s.value);
+
+  // Map subcategory names back to top-level category values using the SUBCATEGORY_TO_CATEGORY_ALIAS
+  const results = new Set<string>();
+  subcats.forEach((sc) => {
+    if (SUBCATEGORY_TO_CATEGORY_ALIAS[sc])
+      results.add(SUBCATEGORY_TO_CATEGORY_ALIAS[sc]);
+    else results.add(sc);
+  });
+
+  return Array.from(results);
+}
+
 // Helper function to check if a service should be contact-only
 export function isContactOnlyService(
   category: string,

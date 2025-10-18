@@ -35,6 +35,56 @@ export class TranslationService {
     }));
   }
 
+  // Get translated event types (top-level occasion categories)
+  getTranslatedEventTypes(): CategoryConfig[] {
+    // EVENT_TYPES is exported from constants and represents occasion types
+    // Use dynamic import to avoid circular issues; import symbol at top is acceptable though
+    // But we will assume EVENT_TYPES is already imported where needed by callers
+    // To keep this simple, map over EVENT_CATEGORIES and filter by known event values
+    const eventValues = [
+      'wedding',
+      'engagement',
+      'conference',
+      'birthday',
+      'corporate',
+      'graduation',
+      'funeral',
+    ];
+    return EVENT_CATEGORIES.filter((c) => eventValues.includes(c.value)).map(
+      (category) => ({
+        ...category,
+        label: this.instant(`categories.${category.value}`),
+        subcategories: category.subcategories.map((sub) => ({
+          ...sub,
+          label: this.instant(`subcategories.${sub.value}`),
+        })),
+      })
+    );
+  }
+
+  // Get translated service categories (actual service groups)
+  getTranslatedServiceCategories(): CategoryConfig[] {
+    const eventValues = [
+      'wedding',
+      'engagement',
+      'conference',
+      'birthday',
+      'corporate',
+      'graduation',
+      'funeral',
+    ];
+    return EVENT_CATEGORIES.filter((c) => !eventValues.includes(c.value)).map(
+      (category) => ({
+        ...category,
+        label: this.instant(`categories.${category.value}`),
+        subcategories: category.subcategories.map((sub) => ({
+          ...sub,
+          label: this.instant(`subcategories.${sub.value}`),
+        })),
+      })
+    );
+  }
+
   // Get translated cities
   // getTranslatedCities(): string[] {
   //   const cities = [

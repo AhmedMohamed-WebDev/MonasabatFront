@@ -18,7 +18,6 @@ import {
 } from '../../core/models/event-item.model';
 import {
   CategoryConfig,
-  EVENT_CATEGORIES,
   isContactOnlyService,
 } from '../../core/models/constants/categories.const';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -54,7 +53,7 @@ export class EditServiceComponent implements OnInit {
   serviceId!: string;
   initialMapLocation?: MapLocation;
 
-  categories = EVENT_CATEGORIES;
+  categories: CategoryConfig[] = [];
   subcategories: { value: string; label: string }[] = [];
   today = new Date().toISOString().split('T')[0];
   excludedDates: string[] = [];
@@ -95,14 +94,20 @@ export class EditServiceComponent implements OnInit {
       name: ['', [Validators.required, Validators.minLength(3)]],
       description: [''],
       category: ['', Validators.required],
-      subcategory: [''],
-      price: ['', [Validators.required, Validators.min(1)]],
+      // support multiple subcategories
+      subcategories: [[]],
+      askForPrice: [false],
+      price: ['', [Validators.min(0)]],
       city: ['', Validators.required], // Add required validator for city
       area: [''],
       lat: [''],
       lng: [''],
       minCapacity: [''],
       maxCapacity: [''],
+      social: this.fb.group({
+        instagram: [''],
+        facebook: [''],
+      }),
       availability: this.fb.group({
         dateRange: this.fb.group({
           from: ['', Validators.required],
@@ -180,15 +185,9 @@ export class EditServiceComponent implements OnInit {
 
   // Add/update these methods
   private updateTranslations(): void {
-    // Update categories with translations
-    this.translatedCategories = this.categories.map((category) => ({
-      ...category,
-      label: this.translate.instant(`categories.${category.value}`),
-      subcategories: category.subcategories.map((sub) => ({
-        ...sub,
-        label: this.translate.instant(`subcategories.${sub.value}`),
-      })),
-    }));
+    // Update categories with translations (service categories only)
+    this.translatedCategories =
+      this.translationService.getTranslatedServiceCategories();
     // Update cities with translations
     this.translatedCities = this.cities.map((city) => {
       let translationKey = '';
@@ -299,14 +298,29 @@ export class EditServiceComponent implements OnInit {
       name: service.name,
       description: service.description || '',
       category: service.category,
-      subcategory: service.subcategory || '',
+      // initialize subcategories array from existing service data
+      subcategories:
+        (service as any).subcategories &&
+        (service as any).subcategories.length > 0
+          ? (service as any).subcategories
+          : service.subcategory
+          ? [service.subcategory]
+          : [],
       price: service.price,
+      askForPrice:
+        service.priceAvailable === false ||
+        service.price === undefined ||
+        service.price === null,
       city: cityValue,
       area: service.location?.area || '',
       lat: service.location?.coordinates?.lat || '',
       lng: service.location?.coordinates?.lng || '',
       minCapacity: service.minCapacity || '',
       maxCapacity: service.maxCapacity || '',
+      social: {
+        instagram: service.social?.instagram || '',
+        facebook: service.social?.facebook || '',
+      },
     });
 
     // Set initial map location if coordinates exist
@@ -331,8 +345,12 @@ export class EditServiceComponent implements OnInit {
         )
       : [];
 
-    // Add this to populate subcategories
-    const category = this.categories.find((c) => c.value === service.category);
+    // Add this to populate subcategories list for UI
+    // Use the translated categories list (populated in updateTranslations) to find
+    // the selected category and build the translated subcategories list for the UI.
+    const category = this.translatedCategories.find(
+      (c) => c.value === service.category
+    );
     if (category) {
       this.subcategories = category.subcategories.map((sub) => ({
         ...sub,
@@ -386,8 +404,8 @@ export class EditServiceComponent implements OnInit {
       this.subcategories = [];
     }
 
-    // Reset subcategory when category changes
-    this.serviceForm.patchValue({ subcategory: '' });
+    // Reset subcategories when category changes
+    this.serviceForm.patchValue({ subcategories: [] });
   }
 
   onImageSelect(event: any): void {
@@ -502,12 +520,26 @@ export class EditServiceComponent implements OnInit {
     try {
       const formValue = this.serviceForm.value;
 
+      const selectedSubcategories: string[] = Array.isArray(
+        formValue.subcategories
+      )
+        ? formValue.subcategories
+        : formValue.subcategories
+        ? [formValue.subcategories]
+        : [];
+
       const eventItemData: UpdateEventItemRequest = {
         name: formValue.name,
         description: formValue.description,
         category: formValue.category,
-        subcategory: formValue.subcategory,
-        price: Number(formValue.price),
+        // legacy single subcategory (first selected) kept for compatibility
+        subcategory:
+          selectedSubcategories.length > 0 ? selectedSubcategories[0] : '',
+        // @ts-ignore - keep new array alongside legacy field
+        subcategories: selectedSubcategories,
+        price: formValue.askForPrice ? undefined : Number(formValue.price),
+        priceType: formValue.askForPrice ? 'not_provided' : 'fixed',
+        priceAvailable: !formValue.askForPrice,
         location: {
           city: formValue.city,
           area: formValue.area,
@@ -532,6 +564,10 @@ export class EditServiceComponent implements OnInit {
           : undefined,
         images: this.existingImages,
         videos: this.existingVideos,
+        social: {
+          instagram: this.normalizeUrl(formValue.social?.instagram),
+          facebook: this.normalizeUrl(formValue.social?.facebook),
+        },
       };
 
       // Update the event item
@@ -663,8 +699,54 @@ export class EditServiceComponent implements OnInit {
   // Check if the selected service is contact-only
   isContactOnlyService(): boolean {
     const category = this.serviceForm.get('category')?.value;
-    const subcategory = this.serviceForm.get('subcategory')?.value;
-    return isContactOnlyService(category, subcategory);
+    // The form stores multiple selected subcategories in 'subcategories' (array).
+    const subs = this.serviceForm.get('subcategories')?.value;
+    const primary = Array.isArray(subs) && subs.length > 0 ? subs[0] : subs;
+    return isContactOnlyService(category, primary);
+  }
+
+  // Toggle selection of a subcategory by value
+  toggleSubcategory(value: string): void {
+    const control = this.serviceForm.get('subcategories');
+    if (!control) return;
+    const current: string[] = Array.isArray(control.value) ? control.value : [];
+    const idx = current.indexOf(value);
+    if (idx === -1) {
+      control.patchValue([...current, value]);
+    } else {
+      const next = current.slice(0, idx).concat(current.slice(idx + 1));
+      control.patchValue(next);
+    }
+  }
+
+  // Convenience for toggling by label (used on chip close button)
+  toggleSubcategoryByValue(labelOrValue: string, isLabel = false): void {
+    let value = labelOrValue;
+    if (isLabel) {
+      const found = this.subcategories.find(
+        (s) => s.label === labelOrValue || s.value === labelOrValue
+      );
+      if (found) value = found.value;
+    }
+    this.toggleSubcategory(value);
+  }
+
+  isSubcategorySelected(value: string): boolean {
+    const control = this.serviceForm.get('subcategories');
+    if (!control) return false;
+    const current: string[] = Array.isArray(control.value) ? control.value : [];
+    return current.includes(value);
+  }
+
+  // Return selected subcategory labels (translated)
+  getSelectedSubcategoryLabels(): string[] {
+    const control = this.serviceForm.get('subcategories');
+    if (!control) return [];
+    const current: string[] = Array.isArray(control.value) ? control.value : [];
+    return current
+      .map((v) => this.subcategories.find((s) => s.value === v))
+      .filter(Boolean)
+      .map((s: any) => s.label);
   }
   updateMapFromCoordinates(): void {
     const latValue = this.serviceForm.get('lat')?.value;
@@ -692,5 +774,20 @@ export class EditServiceComponent implements OnInit {
         lng: Number(lng.toFixed(6)),
       };
     }
+  }
+
+  // Normalize social URL: trim and ensure protocol (https) if looks like a domain
+  private normalizeUrl(url?: string): string | undefined {
+    if (!url) return undefined;
+    let v = String(url).trim();
+    if (!v) return undefined;
+    if (v.startsWith('@')) {
+      v = v.substring(1);
+      return `https://instagram.com/${v}`;
+    }
+    if (!/^https?:\/\//i.test(v)) {
+      v = 'https://' + v;
+    }
+    return v;
   }
 }

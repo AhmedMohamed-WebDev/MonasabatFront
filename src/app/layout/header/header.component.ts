@@ -85,9 +85,9 @@ import { AuthService } from '../../core/services/auth.service';
             </div>
             <div class="d-flex align-items-center mb-2">
               <i class="fas fa-phone me-2 text-warning"></i>
-              <a href="tel:+96261234567" class="text-warning small"
-                >+962 6 123 4567</a
-              >
+              <a href="tel:+96261234567" class="text-warning small" dir="ltr"
+                >+962 6 123 4567
+              </a>
             </div>
             <div class="d-flex align-items-center mb-2">
               <i class="fas fa-map-marker-alt me-2 text-warning"></i>

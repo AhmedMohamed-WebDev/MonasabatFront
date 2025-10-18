@@ -58,7 +58,7 @@
                             </div>
                             <div class="col-md-6">
                                 <h3>Price</h3>
-                                <p class="price">{{ formatCurrency(service.price) }}</p>
+                                <p class="price">{{ getPriceLabel() }}</p>
                             </div>
                         </div>
                     </div>
@@ -108,6 +108,9 @@
                       '&key=YOUR_GOOGLE_MAPS_API_KEY'" alt="Location Map" class="img-fluid rounded">
                         </div>
                     </div>
+                    <div *ngIf="isContactOnlyService()" class="mt-3">
+                        <span class="badge bg-info">📞 {{ 'search.contactRequired' | translate }}</span>
+                    </div>
 
                     <div class="info-card mt-4">
                         <h3>Available Dates</h3>
@@ -137,6 +140,22 @@
                                     </ul>
                                 </ng-template>
                             </ng-container>
+                        </div>
+                    </div>
+
+                    <div class="info-card mt-4" *ngIf="service.social?.instagram || service.social?.facebook">
+                        <h3>{{ 'viewService.social.title' | translate }}</h3>
+                        <div class="social-links d-flex flex-column gap-2">
+                            <a *ngIf="service && service.social && service.social.instagram"
+                                [href]="service && service.social ? service.social.instagram : null" target="_blank"
+                                rel="noopener noreferrer" class="btn btn-outline-primary btn-sm text-start">
+                                <i class="fab fa-instagram me-2"></i>Instagram
+                            </a>
+                            <a *ngIf="service && service.social && service.social.facebook"
+                                [href]="service && service.social ? service.social.facebook : null" target="_blank"
+                                rel="noopener noreferrer" class="btn btn-outline-primary btn-sm text-start">
+                                <i class="fab fa-facebook me-2"></i>Facebook
+                            </a>
                         </div>
                     </div>
                 </div>

@@ -1,5 +1,5 @@
 /* tslint:disable:no-unused-variable */
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { DebugElement } from '@angular/core';
 
@@ -9,11 +9,10 @@ describe('EditServiceComponent', () => {
   let component: EditServiceComponent;
   let fixture: ComponentFixture<EditServiceComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ EditServiceComponent ]
-    })
-    .compileComponents();
+      declarations: [EditServiceComponent],
+    }).compileComponents();
   }));
 
   beforeEach(() => {
@@ -24,5 +23,34 @@ describe('EditServiceComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  describe('subcategory helpers', () => {
+    beforeEach(() => {
+      component.subcategories = [
+        { value: 'x', label: 'X' },
+        { value: 'y', label: 'Y' },
+      ];
+      fixture.detectChanges();
+    });
+
+    it('toggleSubcategory toggles selection', () => {
+      expect(component.isSubcategorySelected('x')).toBeFalse();
+      component.toggleSubcategory('x');
+      expect(component.isSubcategorySelected('x')).toBeTrue();
+    });
+
+    it('toggleSubcategoryByValue maps label to value', () => {
+      component.toggleSubcategoryByValue('X', true);
+      expect(component.isSubcategorySelected('x')).toBeTrue();
+      component.toggleSubcategoryByValue('x', false);
+      expect(component.isSubcategorySelected('x')).toBeFalse();
+    });
+
+    it('getSelectedSubcategoryLabels with selections', () => {
+      component.toggleSubcategory('y');
+      const labels = component.getSelectedSubcategoryLabels();
+      expect(labels).toEqual(['Y']);
+    });
   });
 });

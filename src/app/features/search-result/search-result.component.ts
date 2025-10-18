@@ -9,7 +9,6 @@ import { EventItem } from '../../core/models/event-item.model';
 import { LanguageService } from '../../core/services/language.service';
 import { TranslationService } from '../../core/services/translation.service';
 import {
-  EVENT_CATEGORIES,
   CategoryConfig,
   isContactOnlyService,
 } from '../../core/models/constants/categories.const';
@@ -18,6 +17,7 @@ import {
   SUBCATEGORY_TO_CATEGORY_ALIAS,
   getServiceIconClass,
 } from '../../core/models/constants/categories.const';
+import { MultiSelectComponent } from '../../shared/components/multi-select/multi-select.component';
 
 interface TranslatedCity {
   original: string;
@@ -33,7 +33,13 @@ interface PeopleRange {
 @Component({
   selector: 'app-search-results',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, TranslateModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    TranslateModule,
+    MultiSelectComponent,
+  ],
   templateUrl: './search-result.component.html',
   styleUrls: ['./search-result.component.css'],
 })
@@ -139,9 +145,12 @@ export class SearchResultComponent implements OnInit {
 
       // Sync subcategory filter UI (checkboxes) from query param if present
       if (this.currentParams['subcategory']) {
-        this.filters.selectedSubcategories = [
-          this.currentParams['subcategory'],
-        ];
+        // Accept comma-separated lists in the query param
+        const raw = String(this.currentParams['subcategory']);
+        this.filters.selectedSubcategories = raw
+          .split(',')
+          .map((s) => s.trim())
+          .filter(Boolean);
       } else {
         this.filters.selectedSubcategories = [];
       }
@@ -165,7 +174,10 @@ export class SearchResultComponent implements OnInit {
   }
 
   private updateLookups() {
-    this.eventCategories = this.translationService.getTranslatedCategories();
+    // Use only service categories for the category filter. Event types are high-level buckets
+    // and should not appear as selectable service categories in the filters.
+    this.eventCategories =
+      this.translationService.getTranslatedServiceCategories();
     this.peopleRanges = this.translationService.getTranslatedPeopleRanges();
     this.translatedCities = this.cities.map((city) => {
       let translationKey = '';
@@ -206,16 +218,8 @@ export class SearchResultComponent implements OnInit {
       };
     });
   }
-
   private navigateWith(paramsPatch: any) {
     const newParams: any = { ...this.currentParams, ...paramsPatch };
-
-    // Remove empty values
-    Object.keys(newParams).forEach((key) => {
-      const v = newParams[key];
-      if (v === '' || v === undefined || v === null) delete newParams[key];
-    });
-
     // Skip if nothing changed
     const curr = JSON.stringify(this.currentParams || {});
     const next = JSON.stringify(newParams || {});
@@ -246,8 +250,15 @@ export class SearchResultComponent implements OnInit {
     }
   }
 
-  onSubcategoryChange(value: string) {
-    this.navigateWith({ subcategory: value || '' });
+  // Accept a single value or an array of values; write comma-joined string to URL
+  onSubcategoryChange(value: string | string[]) {
+    if (!value || (Array.isArray(value) && value.length === 0)) {
+      this.navigateWith({ subcategory: '' });
+      return;
+    }
+
+    const param = Array.isArray(value) ? value.join(',') : String(value);
+    this.navigateWith({ subcategory: param });
   }
 
   onCityChange(value: string) {
@@ -354,17 +365,15 @@ export class SearchResultComponent implements OnInit {
 
     if (checked) {
       this.filters.selectedSubcategories.push(subcategoryValue);
-      // Drive URL with single subcategory for simplicity
-      this.onSubcategoryChange(subcategoryValue);
     } else {
       this.filters.selectedSubcategories =
         this.filters.selectedSubcategories.filter(
           (s) => s !== subcategoryValue
         );
-      if (this.filters.selectedSubcategories.length === 0) {
-        this.onSubcategoryChange('');
-      }
     }
+
+    // Update URL with the current selected subcategories as comma-separated list
+    this.onSubcategoryChange(this.filters.selectedSubcategories);
     this.applyFilters();
   }
 
@@ -385,13 +394,28 @@ export class SearchResultComponent implements OnInit {
 
   applyFilters() {
     this.filteredResults = this.results.filter((item) => {
+      // item.subcategory may be a string (legacy) or an array of strings (new)
+      const itemSubcategories: string[] = Array.isArray(item.subcategory)
+        ? item.subcategory
+        : item.subcategory
+        ? [item.subcategory]
+        : [];
+
       const subcategoryMatch =
         this.filters.selectedSubcategories.length === 0 ||
-        this.filters.selectedSubcategories.includes(item.subcategory || '');
+        this.filters.selectedSubcategories.some((s) =>
+          itemSubcategories.includes(s)
+        );
 
+      // Safely handle optional price
+      const itemPrice = item.price ?? null;
       const priceMatch =
-        item.price >= this.filters.priceRange.min &&
-        item.price <= this.filters.priceRange.max;
+        itemPrice === null
+          ? // If item has no price, only match if filter range encompasses 'no price' behaviour
+            // We treat items with no price as matching unless the user limited the range strictly
+            true
+          : itemPrice >= this.filters.priceRange.min &&
+            itemPrice <= this.filters.priceRange.max;
 
       // Location filter: show nearby only
       const locationMatch =
@@ -422,9 +446,14 @@ export class SearchResultComponent implements OnInit {
 
   calculatePriceRange() {
     if (this.results.length > 0) {
-      const prices = this.results.map((item) => item.price ?? 0);
-      this.filters.minPrice = Math.min(...prices);
-      this.filters.maxPrice = Math.max(...prices);
+      // Ignore null/undefined prices when computing slider bounds
+      const knownPrices = this.results
+        .map((item) => item.price)
+        .filter((p): p is number => p !== undefined && p !== null && !isNaN(p));
+      this.filters.minPrice =
+        knownPrices.length > 0 ? Math.min(...knownPrices) : 0;
+      this.filters.maxPrice =
+        knownPrices.length > 0 ? Math.max(...knownPrices) : 10000;
       // Clamp current range to new bounds
       this.filters.priceRange = {
         min: Math.max(
@@ -514,7 +543,24 @@ export class SearchResultComponent implements OnInit {
     return this.translationService.instant(`categories.${value}`) || value;
   }
 
-  getSubcategoryLabel(value: string): string {
+  getSubcategoryLabel(value: string | string[]): string {
+    if (Array.isArray(value)) {
+      return value
+        .map((v) => this.translationService.instant(`subcategories.${v}`) || v)
+        .join(', ');
+    }
+
+    // Accept comma-separated strings (from URL) as multiple values
+    if (typeof value === 'string' && value.includes(',')) {
+      const parts = value
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean);
+      return parts
+        .map((v) => this.translationService.instant(`subcategories.${v}`) || v)
+        .join(', ');
+    }
+
     return this.translationService.instant(`subcategories.${value}`) || value;
   }
 
@@ -523,6 +569,14 @@ export class SearchResultComponent implements OnInit {
       this.translationService.instant(`cities.jordan.${value.toLowerCase()}`) ||
       value
     );
+  }
+
+  // Return primary subcategory string (first element) when service may have multiple
+  getPrimarySubcategory(
+    subcategory: string | string[] | undefined
+  ): string | undefined {
+    if (!subcategory) return undefined;
+    return Array.isArray(subcategory) ? subcategory[0] : subcategory;
   }
 
   getSelectedPeopleLabel(): string {
@@ -625,7 +679,52 @@ export class SearchResultComponent implements OnInit {
   }
 
   isContactOnly(service: EventItem): boolean {
-    return isContactOnlyService(service.category, service.subcategory);
+    const sub = (service as any).subcategory;
+    const primary = Array.isArray(sub) ? sub[0] : sub;
+    // Contact-only when category rules say so OR when price is missing.
+    const contactByCategory = isContactOnlyService(service.category, primary);
+    const priceMissing = this.isPriceMissing(service);
+    return contactByCategory || priceMissing;
+  }
+
+  // Helper: check if this service has no price specified
+  isPriceMissing(service: EventItem): boolean {
+    return (
+      service.price === undefined ||
+      service.price === null ||
+      service.priceType === 'not_provided'
+    );
+  }
+
+  // Return a localized price label; bilingual fallback when price unavailable
+  getPriceLabel(service: EventItem): string {
+    if (
+      service.price === undefined ||
+      service.price === null ||
+      service.priceType === 'not_provided'
+    ) {
+      // Use translation key for ask for price
+      return this.translate.instant('search.askForPrice');
+    }
+
+    if (service.priceType === 'free')
+      return this.translate.instant('search.results.free') || 'Free';
+
+    const currency = service.priceCurrency || 'JOD';
+    // Use Intl.NumberFormat for basic formatting
+    try {
+      const nf = new Intl.NumberFormat(
+        this.translate.currentLang === 'ar' ? 'ar-EG' : 'en-US',
+        {
+          style: 'currency',
+          currency,
+          maximumFractionDigits: 2,
+        }
+      );
+      return nf.format(service.price as number);
+    } catch (e) {
+      return `${service.price} ${currency}`;
+    }
   }
 
   openFilters(section: 'all' | 'city' | 'category' | 'date') {

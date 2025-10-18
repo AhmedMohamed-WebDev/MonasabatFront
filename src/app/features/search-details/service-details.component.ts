@@ -56,6 +56,8 @@ export class ServiceDetailComponent implements OnInit, OnDestroy {
   contactRequestLoading = false;
   contactRequestStatus: 'pending' | 'accepted' | 'rejected' | null = null;
   checkingContactStatus = false;
+  // If the client has an accepted contact request with quotedPrice, store it
+  myAcceptedRequest: any = null;
 
   private destroy$ = new Subject<void>();
 
@@ -397,6 +399,8 @@ export class ServiceDetailComponent implements OnInit, OnDestroy {
             // If accepted, update chat access
             if (response.status === 'accepted') {
               this.chatAccess = { canChat: true };
+              // Keep the accepted request for conversion UI
+              this.myAcceptedRequest = response;
             }
           }
         },
@@ -410,12 +414,59 @@ export class ServiceDetailComponent implements OnInit, OnDestroy {
   // Utility methods
   shouldShowBookingButton(): boolean {
     if (!this.service) return false;
-    return !isContactOnlyService(
+    const sub = this.service?.subcategory;
+    const primary = Array.isArray(sub) ? sub[0] : sub;
+    // Booking should be shown only when the service is not contact-only by category
+    // and the service actually has a price provided.
+    const contactOnlyByCategory = isContactOnlyService(
       this.service.category,
-      this.service.subcategory
+      primary
+    );
+    return !contactOnlyByCategory && !this.isPriceMissing(this.service);
+  }
+
+  // Helper: check if this service has no price specified
+  isPriceMissing(service: any): boolean {
+    if (!service) return true;
+    return (
+      service.price === undefined ||
+      service.price === null ||
+      service.priceType === 'not_provided'
     );
   }
 
+  // Return localized price label or 'Ask for price' when missing
+  getPriceLabel(service: any): string {
+    if (!service) return '';
+    if (this.isPriceMissing(service)) {
+      // Use translation key; fallback to English/Arabic pair if translate not ready
+      try {
+        return this.translate.instant('search.askForPrice');
+      } catch (e) {
+        return 'Ask for price / اسألني عن السعر';
+      }
+    }
+
+    if (service.priceType === 'free')
+      return this.translate.instant('serviceDetails.price.free') || 'Free';
+
+    const currency = service.priceCurrency || 'JOD';
+    try {
+      const formatter = new Intl.NumberFormat(
+        this.languageService.getCurrentLanguage() === 'ar' ? 'ar-EG' : 'en-US',
+        {
+          style: 'currency',
+          currency,
+          maximumFractionDigits: 2,
+        }
+      );
+      // Some backends store raw number; ensure number
+      const amount = Number(service.price) || 0;
+      return formatter.format(amount).replace(/\u00A0/g, ' ');
+    } catch (e) {
+      return `${currency} ${service.price}`;
+    }
+  }
   formatDate(date: Date | string): string {
     const dateObj = new Date(date);
     const currentLang = this.languageService.getCurrentLanguage();
@@ -447,13 +498,12 @@ export class ServiceDetailComponent implements OnInit, OnDestroy {
       : '';
   }
 
-  // Helper method to get translated subcategory
+  // Helper method to get translated subcategory (supports array or string)
   getTranslatedSubcategory(): string {
-    return this.service?.subcategory
-      ? this.translationService.getTranslatedSubcategory(
-          this.service.subcategory
-        )
-      : '';
+    const sub = this.service?.subcategory;
+    if (!sub) return '';
+    const primary = Array.isArray(sub) ? sub[0] : sub;
+    return this.translationService.getTranslatedSubcategory(primary);
   }
 
   // Helper method to get translated city
@@ -550,6 +600,7 @@ export class ServiceDetailComponent implements OnInit, OnDestroy {
           if (response.success) {
             this.contactRequestSent = true;
             this.contactRequestStatus = 'pending';
+            this.myAcceptedRequest = null;
 
             // Show success notification
             this.notificationService.show(
@@ -584,6 +635,89 @@ export class ServiceDetailComponent implements OnInit, OnDestroy {
           this.notificationService.show('error', 'Error', errorMessage);
         },
       });
+  }
+
+  // New: convert quoted contact request into a booking
+  convertMyRequestToBooking() {
+    if (!this.myAcceptedRequest || !this.myAcceptedRequest.requestId) return;
+
+    // Ask user to confirm date/people (use existing service booking UI or minimal prompt)
+    const eventDate = prompt('Enter event date (YYYY-MM-DD):');
+    if (!eventDate) return;
+
+    const numberOfPeople =
+      Number(prompt('Enter number of people (optional):') || 0) || undefined;
+
+    this.contactService
+      .convertContactRequest(this.myAcceptedRequest.requestId, {
+        eventDate,
+        numberOfPeople,
+        publishPrice: false,
+      })
+      .subscribe({
+        next: (res) => {
+          this.notificationService.show(
+            'success',
+            'Booking created',
+            'Booking created from quoted request'
+          );
+          // navigate to booking details or reload
+          this.router.navigate(['/bookings']);
+        },
+        error: (err) => {
+          console.error('Convert failed', err);
+          this.notificationService.show(
+            'error',
+            'Convert failed',
+            err.error?.message || 'Failed to convert request'
+          );
+        },
+      });
+  }
+
+  // Treat clicking a social link as a contact request (deduct quota and follow same flow)
+  openSocial(which: 'instagram' | 'facebook') {
+    // Ensure service and supplier exist
+    if (!this.service || !this.service.supplier) return;
+
+    const socialUrl = this.service.social?.[which];
+    if (!socialUrl) return;
+
+    // Open the social link immediately in a new tab/window for the user
+    try {
+      // Use target _blank and noopener to avoid access to our window
+      window.open(socialUrl, '_blank', 'noopener');
+    } catch (err) {
+      // Fallback: navigate in same tab if popup blocked
+      window.location.href = socialUrl;
+    }
+
+    // Send a background contact-request to deduct supplier quota and record origin
+    // Do not block the user; handle errors silently but log them
+    const currentUser = this.authService.getCurrentUser();
+    if (!currentUser) return;
+
+    const payload = {
+      client: currentUser.id,
+      supplier: this.service.supplier._id,
+      service: this.service._id,
+      message: `${this.translate.instant('serviceDetails.social.clicked', {
+        which: which,
+        serviceName: this.service.name,
+      })}`,
+      via: which,
+    };
+
+    // Fire-and-forget: subscribe but don't update UI state for this background call
+    this.contactService.sendContactRequest(payload).subscribe({
+      next: (res) => {
+        // Optionally notify supplier or log success; keep lightweight
+        console.debug('Background social contact request sent', res);
+      },
+      error: (err) => {
+        console.error('Failed to send background social contact request', err);
+      },
+    });
   }
 
   // Check if user can send contact request
