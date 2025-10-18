@@ -11,15 +11,25 @@ export class PhoneService {
     // Remove all non-digit characters except +
     let cleaned = phone.replace(/[^\d+]/g, '');
 
-    // Handle different formats
+    // Normalize international prefixes:
+    // - +...  => keep
+    // - 00... => convert to +...
+    // - bare country code like 962... => convert to +...
+    if (cleaned.startsWith('00')) {
+      cleaned = '+' + cleaned.substring(2);
+    } else if (cleaned.startsWith('962')) {
+      cleaned = '+' + cleaned;
+    }
+
+    // Handle local formats
     if (cleaned.startsWith('07')) {
       cleaned = '+962' + cleaned.substring(1);
     } else if (cleaned.startsWith('7')) {
       cleaned = '+962' + cleaned;
-    } else if (cleaned.startsWith('00962')) {
-      // convert 00962... to +962...
-      cleaned = '+' + cleaned.substring(2);
-    } else if (!cleaned.startsWith('+962')) {
+    }
+
+    // After normalization, ensure we have an accepted international Jordan form
+    if (!cleaned.startsWith('+962') && !cleaned.startsWith('+965')) {
       throw new Error(PHONE_CONFIG.ERROR_MESSAGES.FORMAT);
     }
 

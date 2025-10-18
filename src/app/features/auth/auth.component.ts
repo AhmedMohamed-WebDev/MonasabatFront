@@ -5,6 +5,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../../core/services/auth.service';
 import { LanguageService } from '../../core/services/language.service';
+import { PhoneService } from '../../core/services/phone.service';
 import { AuthResponse, User } from '../../core/models/auth.model';
 
 @Component({
@@ -19,6 +20,7 @@ export class AuthComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private translate = inject(TranslateService);
   private languageService = inject(LanguageService);
+  private phoneService = inject(PhoneService);
 
   // Form data
   phone: string = '';
@@ -70,11 +72,29 @@ export class AuthComponent implements OnInit {
       return;
     }
 
-    // Phone number validation: normalize and validate as +965 (Kuwait) or +962 (Jordan)
+    // Phone number validation: sanitize, normalize and validate as +965 (Kuwait) or +962 (Jordan)
     let apiPhone: string;
+    // Remove zero-width and non-breaking spaces and trim
+    const sanitizedInput = (this.phone || '')
+      .replace(/\u200B|\u200C|\u200D|\uFEFF/g, '')
+      .replace(/\u00A0/g, ' ')
+      .trim();
     try {
-      apiPhone = this.normalizePhoneForApi(this.phone || '');
+      apiPhone = this.phoneService.formatPhoneNumber(sanitizedInput);
+      console.debug(
+        'Auth.sendOTP: raw ->',
+        JSON.stringify(this.phone),
+        'sanitized ->',
+        JSON.stringify(sanitizedInput),
+        'normalized ->',
+        apiPhone
+      );
     } catch (err) {
+      console.debug(
+        'Auth.sendOTP: failed to normalize phone',
+        JSON.stringify(this.phone),
+        err
+      );
       this.error = this.translate.instant('auth.validation.phoneInvalid');
       return;
     }
@@ -83,6 +103,7 @@ export class AuthComponent implements OnInit {
     const jordanApiRegex = /^\+962\d{9}$/;
 
     if (!kuwaitApiRegex.test(apiPhone) && !jordanApiRegex.test(apiPhone)) {
+      console.debug('Auth.sendOTP: normalized phone for validation', apiPhone);
       this.error = this.translate.instant('auth.validation.phoneInvalid');
       return;
     }
@@ -93,7 +114,7 @@ export class AuthComponent implements OnInit {
 
     try {
       const raw = this.phone;
-      const apiPhone = this.normalizePhoneForApi(raw);
+      const apiPhone = this.phoneService.formatPhoneNumber(raw);
       // Store the response which now includes the OTP
       const response: any = await this.authService.sendOTP(
         apiPhone,
@@ -146,7 +167,19 @@ export class AuthComponent implements OnInit {
     this.error = '';
 
     try {
-      const apiPhone = this.normalizePhoneForApi(this.phone);
+      const sanitizedInput = (this.phone || '')
+        .replace(/\u200B|\u200C|\u200D|\uFEFF/g, '')
+        .replace(/\u00A0/g, ' ')
+        .trim();
+      const apiPhone = this.phoneService.formatPhoneNumber(sanitizedInput);
+      console.debug(
+        'Auth.verifyOTP: raw ->',
+        JSON.stringify(this.phone),
+        'sanitized ->',
+        JSON.stringify(sanitizedInput),
+        'normalized ->',
+        apiPhone
+      );
       const response: AuthResponse = await this.authService.verifyOTP(
         apiPhone,
         this.otp.trim(),
@@ -248,57 +281,20 @@ export class AuthComponent implements OnInit {
   }
 
   formatPhoneNumber() {
-    // Remove all non-digit characters
-    let value = this.phone.replace(/\D/g, '');
-    // Handle Kuwait numbers first (country code 965, local 8 digits)
-    if (value.startsWith('965')) {
-      let local = value.replace(/^965/, '');
-      local = local.substring(0, 8); // max 8 digits
-      const a = local.substring(0, 3);
-      const b = local.substring(3, 6);
-      const c = local.substring(6);
-      this.phone = `+965${a ? ' ' + a : ''}${b ? ' ' + b : ''}${
-        c ? ' ' + c : ''
-      }`.trim();
-      return;
-    }
-
-    // If user entered an 8-digit Kuwait local number (starts with 9)
-    if (/^9\d{7}$/.test(value)) {
-      const local = value.substring(0, 8);
-      const a = local.substring(0, 3);
-      const b = local.substring(3, 6);
-      const c = local.substring(6);
-      this.phone = `+965${a ? ' ' + a : ''}${b ? ' ' + b : ''}${
-        c ? ' ' + c : ''
-      }`.trim();
-      return;
-    }
-
-    // Default: treat as Jordan number
-    // Remove leading country code or leading zero
-    if (value.startsWith('962')) {
-      value = value.substring(3);
-    } else if (value.startsWith('0')) {
-      value = value.substring(1);
-    }
-
-    // Ensure maximum length of 9 digits for Jordan numbers
-    if (value.length > 9) {
-      value = value.substring(0, 9);
-    }
-
-    // Format as (07X) XXX-XXXX or partial
-    if (value.length > 0) {
-      this.phone =
-        value.length <= 3
-          ? `(${value})`
-          : value.length <= 6
-          ? `(${value.substring(0, 3)}) ${value.substring(3)}`
-          : `(${value.substring(0, 3)}) ${value.substring(
-              3,
-              6
-            )}-${value.substring(6)}`;
+    // Use PhoneService to normalize input to canonical international form.
+    // This avoids the previous ad-hoc trimming which mangled inputs like 00962...
+    try {
+      const normalized = this.phoneService.formatPhoneNumber(this.phone || '');
+      // Prefer a readable form — if formatForDisplay supports it, use it; otherwise use normalized
+      try {
+        this.phone =
+          this.phoneService.formatForDisplay(normalized) || normalized;
+      } catch (err) {
+        this.phone = normalized;
+      }
+    } catch (err) {
+      // If normalization fails, keep raw input (validation will catch it on submit)
+      this.phone = (this.phone || '').trim();
     }
   }
 }

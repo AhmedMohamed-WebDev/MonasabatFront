@@ -11,6 +11,7 @@ import {
 } from '@angular/forms';
 import { JoinService } from '../../core/services/join.service';
 import { AuthService } from '../../core/services/auth.service';
+import { PhoneService } from '../../core/services/phone.service';
 import { Router } from '@angular/router';
 import { JoinStatus } from '../../core/models/join.model';
 import { TranslateService, TranslateModule } from '@ngx-translate/core';
@@ -75,6 +76,7 @@ export class JoinComponent {
     private fb: FormBuilder,
     private joinService: JoinService,
     private authService: AuthService,
+    private phoneService: PhoneService,
     private router: Router,
     private translate: TranslateService,
     private translationService: TranslationService
@@ -130,9 +132,20 @@ export class JoinComponent {
       this.isSubmitting = true;
       this.hideAlerts();
 
+      // Normalize phone to canonical international form before submitting
+      const rawPhone = this.joinForm.get('phone')?.value || '';
+      let normalizedPhone = rawPhone;
+      try {
+        normalizedPhone = this.phoneService.formatPhoneNumber(rawPhone);
+      } catch (e) {
+        // Fall back to raw value if normalization fails; backend will validate
+        normalizedPhone = rawPhone;
+      }
+
       // Get form values and explicitly include phoneCountry
       const formData = {
         ...this.joinForm.value,
+        phone: normalizedPhone,
         country: this.joinForm.get('country')?.value || 'jordan',
         phoneCountry: this.joinForm.get('phoneCountry')?.value || 'jordan',
       };
@@ -189,8 +202,15 @@ export class JoinComponent {
   }
 
   checkJoinStatus(): void {
-    const phone = this.joinForm.get('phone')?.value;
-    if (!phone) return;
+    const raw = this.joinForm.get('phone')?.value;
+    if (!raw) return;
+
+    let phone = raw;
+    try {
+      phone = this.phoneService.formatPhoneNumber(raw);
+    } catch (e) {
+      phone = raw;
+    }
 
     if (this.authService.getCurrentUser()?.role === 'supplier') {
       this.router.navigate(['/supplier-dashboard']);
