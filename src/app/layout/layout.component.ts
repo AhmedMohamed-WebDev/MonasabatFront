@@ -1,10 +1,12 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { LanguageService } from '../core/services/language.service';
 import { FooterComponent } from './footer/footer.component';
 import { HeaderComponent } from './header/header.component';
+import { Router, NavigationEnd } from '@angular/router';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-layout',
@@ -40,14 +42,38 @@ import { HeaderComponent } from './header/header.component';
     `,
   ],
 })
-export class LayoutComponent implements OnInit {
+export class LayoutComponent implements OnInit, OnDestroy {
   isRTL = false;
 
-  constructor(private languageService: LanguageService) {}
+  private routerSub: Subscription | null = null;
+
+  constructor(
+    private languageService: LanguageService,
+    private router: Router
+  ) {}
 
   ngOnInit() {
     this.languageService.currentLanguage$.subscribe(() => {
       this.isRTL = this.languageService.isRTL();
     });
+    // Scroll to top on every successful navigation so pages always start at top
+    this.routerSub = this.router.events.subscribe((ev) => {
+      if (ev instanceof NavigationEnd) {
+        try {
+          // Use instant scroll to avoid visual jump in some browsers
+          window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+        } catch (e) {
+          // fallback
+          window.scrollTo(0, 0);
+        }
+      }
+    });
+  }
+
+  ngOnDestroy() {
+    if (this.routerSub) {
+      this.routerSub.unsubscribe();
+      this.routerSub = null;
+    }
   }
 }
