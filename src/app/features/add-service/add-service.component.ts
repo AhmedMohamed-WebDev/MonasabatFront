@@ -62,6 +62,7 @@ export class AddServiceComponent implements OnInit {
     'Madaba',
     'Karak',
     'Tafilah',
+    'Maan',
     // Kuwait cities
     'Kuwait City',
     'Ahmadi',
