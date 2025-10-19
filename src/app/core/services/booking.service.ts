@@ -4,12 +4,15 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Booking, CancelBookingResponse } from '../models/booking.model';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class BookingService {
-  private apiUrl = 'http://localhost:5000/api/bookings';
+  private apiUrl =
+    (environment.apiUrl || 'http://localhost:5000/api').replace(/\/+$/, '') +
+    '/bookings';
 
   constructor(private http: HttpClient) {}
 
