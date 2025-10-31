@@ -80,6 +80,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     'Karak',
     'Tafilah',
     'Maan',
+    'Ramtha',
     // Kuwait cities
     'Kuwait City',
     'Ahmadi',

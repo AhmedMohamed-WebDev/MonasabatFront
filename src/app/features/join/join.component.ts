@@ -45,6 +45,7 @@ export class JoinComponent {
       { value: 'Jerash', label: 'Jerash' },
       { value: 'Balqa', label: 'Balqa' },
       { value: 'Maan', label: 'Maan' },
+      { value: 'Ramtha', label: 'Ramtha' },
     ],
     kuwait: [
       { value: 'Kuwait_City', label: 'Kuwait City' },

@@ -120,7 +120,7 @@ import { AuthService } from '../../core/services/auth.service';
         </ng-container>
         <div class="nav-item dropdown" *ngIf="isAuthenticated">
           <button
-            class="btn btn-outline-primary dropdown-toggle rounded-pill px-4"
+            class="btn btn-outline-primary rounded-pill px-4"
             data-bs-toggle="dropdown"
           >
             <i class="fas fa-user me-2"></i>{{ currentUser?.name }}

@@ -124,6 +124,7 @@ export class TranslationService {
         'karak',
         'tafilah',
         'maan',
+        'ramtha',
       ].includes(city)
     ) {
       return this.translate.instant(`cities.jordan.${city}`);

@@ -31,7 +31,9 @@ export interface BookingResponse {
 })
 export class BookingFormService {
   private http = inject(HttpClient);
-  private readonly apiUrl = environment.apiUrl || 'http://localhost:5000/api';
+  private readonly apiUrl = (
+    environment.apiUrl || 'http://localhost:5000/api'
+  ).replace(/\/+$/, '');
 
   /**
    * Get event item details by ID

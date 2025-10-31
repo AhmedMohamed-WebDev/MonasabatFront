@@ -321,7 +321,9 @@
       "title": "Supplier Information",
       "call": "Call Supplier",
       "chatWithSupplier": "Chat with Supplier",
-      "loginToChat": "Login to Chat"
+      "loginToChat": "Login to Chat",
+      "requestFacebook": "Facebook",
+      "requestInstagram": "Instagram"
     },
     "price": {
       "currency": "JOD",
@@ -356,7 +358,8 @@
       "tafilah": "Tafilah",
       "jerash": "Jerash",
       "balqa": "Balqa",
-      "maan": "Maan"
+      "maan": "Maan",
+      "ramtha": "Ramtha"
     },
     "kuwait": {
       "title": "Kuwait",
@@ -1109,6 +1112,10 @@
       "error": {
         "createFailed": "Failed to create service. Please try again.",
         "uploadFailed": "Failed to upload media files. Please try again."
+      },
+      "social": {
+        "instagramHelp": "add your instegram page link",
+        "facebookHelp": "add your facebook page link"
       }
     },
     "loading": {
