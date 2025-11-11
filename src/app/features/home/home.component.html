@@ -191,10 +191,11 @@
                 <i class="fas fa-calendar me-2"></i>
                 {{ 'home.eventTypeLabel' | translate }}
               </label>
+              <!-- Show only service categories in the search modal dropdown (not legacy event-type entries) -->
               <select class="form-select" [(ngModel)]="searchForm.eventType" name="eventType"
                 (change)="onCategoryChange()">
                 <option value="">{{ 'home.selectEventType' | translate }}</option>
-                <option *ngFor="let category of eventCategories" [value]="category.value">
+                <option *ngFor="let category of servicesList" [value]="category.value">
                   {{ category.label }}
                 </option>
               </select>
