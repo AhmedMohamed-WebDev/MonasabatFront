@@ -202,5 +202,5 @@ import { TranslateModule } from '@ngx-translate/core';
 })
 export class FooterComponent {
   public readonly email = 'info@eventbook.com';
-  public readonly phone = '+96261234567';
+  public readonly phone = '+965 9914 1518';
 }

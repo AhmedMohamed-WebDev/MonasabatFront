@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { NotificationToastComponent } from './shared/components/notification-toast/notification-toast.component';
 import { CommonModule } from '@angular/common';
+import { AppNameService } from './core/services/app-name.service';
 
 @Component({
   selector: 'app-root',
@@ -73,7 +74,9 @@ export class AppComponent {
     },
   ];
 
-  constructor() {
+  constructor(private appNameService: AppNameService) {
+    // Initialize translated application name and title handling
+    this.appNameService.init();
     // Load theme from localStorage if exists
     const saved = localStorage.getItem('app-theme');
     if (saved) {

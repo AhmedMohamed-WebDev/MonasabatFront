@@ -1,6 +1,7 @@
 {
+  "appName": "Lamitna",
   "header": {
-    "brandName": "EventBook",
+    "brandName": "Lamitna",
     "signIn": "Sign In",
     "userMenu": "User Menu",
     "dashboard": "Dashboard",
@@ -9,7 +10,8 @@
   },
   "common": {
     "cancel": "Cancel",
-    "apply": "Apply"
+    "apply": "Apply",
+    "brandName": "Lamitna"
   },
   "home": {
     "heroTitle": "Find Perfect Event Services",
@@ -20,7 +22,7 @@
     "selectEventType": "Select Event Type",
     "eventType": "Event Type",
     "eventTypeSubtitle": "Browse event types for your next occasion",
-    "peopleLabel": "People",
+    "copyright": "© 2024 Lamitna. All rights reserved.",
     "selectPeople": "Select number of people",
     "dateLabel": "Date",
     "searchButton": "Search Services",
@@ -41,7 +43,7 @@
     "events": "Events"
   },
   "footer": {
-    "brandName": "EventBook",
+    "brandName": "Lamitna",
     "description": "Your trusted partner for finding the perfect event services and venues.",
     "quickLinksTitle": "Quick Links",
     "aboutLink": "About Us",
@@ -50,9 +52,9 @@
     "termsLink": "Terms & Conditions",
     "contactInfoTitle": "Contact Info",
     "emailInfo": "info@eventbook.com",
-    "phoneInfo": "+962 6 123 4567",
+    "phoneInfo": "+965 9914 1518",
     "addressInfo": "Amman, Jordan",
-    "copyright": "© 2024 EventBook. All rights reserved."
+    "copyright": "© 2024 Lamitna. All rights reserved."
   },
   "search": {
     "title": "Search Results",
@@ -768,7 +770,7 @@
   "clientDashboard": {
     "header": {
       "title": "My Bookings",
-      "subtitle": "Manage your event bookings"
+      "subtitle": "Manage your Lamitna bookings"
     },
     "loading": {
       "text": "Loading...",

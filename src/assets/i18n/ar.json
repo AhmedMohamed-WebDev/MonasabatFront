@@ -1,6 +1,7 @@
 {
+  "appName": "لمتنا",
   "header": {
-    "brandName": "إيفنت بوك",
+    "brandName": "لمتنا",
     "signIn": "تسجيل الدخول",
     "userMenu": "قائمة المستخدم",
     "dashboard": "لوحة التحكم",
@@ -9,7 +10,8 @@
   },
   "common": {
     "cancel": "إلغاء",
-    "apply": "تطبيق"
+    "apply": "تطبيق",
+    "brandName": "لمتنا"
   },
   "home": {
     "heroTitle": "اعثر على خدمات المناسبات المثالية",
@@ -41,7 +43,7 @@
     "events": "مناسبات"
   },
   "footer": {
-    "brandName": "إيفنت بوك",
+    "brandName": "لمتنا",
     "description": "شريكك الموثوق للعثور على خدمات وأماكن المناسبات المثالية.",
     "quickLinksTitle": "روابط سريعة",
     "aboutLink": "من نحن",
@@ -50,9 +52,9 @@
     "termsLink": "الشروط والأحكام",
     "contactInfoTitle": "معلومات التواصل",
     "emailInfo": "info@eventbook.com",
-    "phoneInfo": "+962 6 123 4567",
+    "phoneInfo": "+965 9914 1518",
     "addressInfo": "عمان، الأردن",
-    "copyright": "© 2024 إيفنت بوك. جميع الحقوق محفوظة."
+    "copyright": "© 2024 لمتنا. جميع الحقوق محفوظة."
   },
   "search": {
     "title": "نتائج البحث",

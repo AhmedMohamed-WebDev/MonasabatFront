@@ -3,7 +3,7 @@
 export const environment = {
   production: false, // Development environment
   apiUrl: 'http://localhost:5000/api', // Local development API URL
-  appName: 'Event Booking Platform',
+  appName: 'Lamitna',
   version: '1.0.0',
 
   // Feature flags

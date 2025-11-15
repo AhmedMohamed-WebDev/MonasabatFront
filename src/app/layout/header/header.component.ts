@@ -24,7 +24,7 @@ import { AuthService } from '../../core/services/auth.service';
         <!-- Brand -->
         <a class="navbar-brand fw-bold text-dark" routerLink="/">
           <span class="text-warning">✨</span>
-          {{ getCurrentLanguage() === 'ar' ? 'حجز المناسبات' : 'EventBook' }}
+          {{ getCurrentLanguage() === 'ar' ? 'لمتنا' : 'Lamitna' }}
         </a>
 
         <!-- Hamburger for mobile -->
@@ -56,7 +56,7 @@ import { AuthService } from '../../core/services/auth.service';
             (click)="closeDrawer()"
           >
             <span class="text-warning">✨</span>
-            {{ getCurrentLanguage() === 'ar' ? 'حجز المناسبات' : 'EventBook' }}
+            {{ getCurrentLanguage() === 'ar' ? 'لمتنا' : 'Lamitna' }}
           </a>
           <ng-container
             *ngTemplateOutlet="navLinks; context: { closeDrawer: closeDrawer }"
@@ -86,7 +86,7 @@ import { AuthService } from '../../core/services/auth.service';
             <div class="d-flex align-items-center mb-2">
               <i class="fas fa-phone me-2 text-warning"></i>
               <a href="tel:+96261234567" class="text-warning small" dir="ltr"
-                >+962 6 123 4567
+                >+965 9914 1518
               </a>
             </div>
             <div class="d-flex align-items-center mb-2">
@@ -99,8 +99,8 @@ import { AuthService } from '../../core/services/auth.service';
           <div class="drawer-copyright text-center small text-muted mt-3">
             {{
               getCurrentLanguage() === 'ar'
-                ? '© 2024 إيفنت بوك. جميع الحقوق محفوظة.'
-                : '© 2024 EventBook. All rights reserved.'
+                ? '© 2024 لمتنا. جميع الحقوق محفوظة.'
+                : '© 2024 Lamitna. All rights reserved.'
             }}
           </div>
         </div>

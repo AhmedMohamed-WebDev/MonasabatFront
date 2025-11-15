@@ -18,12 +18,12 @@ export const routes: Routes = [
       {
         path: 'login',
         component: AuthComponent,
-        title: 'Login | Event Booking Platform',
+        title: 'Login | Lamitna',
       },
       {
         path: 'register',
         component: AuthComponent,
-        title: 'Register | Event Booking Platform',
+        title: 'Register | Lamitna',
       },
       {
         path: 'search-results',

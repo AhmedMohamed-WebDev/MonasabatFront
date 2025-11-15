@@ -11,7 +11,8 @@ import { AuthService } from '../services/auth.service';
     <header class="navbar navbar-expand-lg bg-white shadow-sm">
       <div class="container">
         <a class="navbar-brand fw-bold text-dark" routerLink="/">
-          <span class="text-warning">✨</span> EventBook
+          <span class="text-warning">✨</span>
+          {{ currentLang === 'ar' ? 'لمتنا' : 'Lamitna' }}
         </a>
 
         <div class="navbar-nav ms-auto d-flex align-items-center gap-3">
