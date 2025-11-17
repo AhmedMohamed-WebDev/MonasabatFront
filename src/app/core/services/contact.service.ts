@@ -237,7 +237,7 @@ export class ContactService {
     this.rateLimiter.recordCall(endpoint);
 
     return this.http
-      .get<any>(`${this.apiUrl}/check-status`, {
+      .get<any>(`${this.apiUrl}/request-status`, {
         params: { clientId, supplierId, serviceId },
       })
       .pipe(

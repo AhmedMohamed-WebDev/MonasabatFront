@@ -26,8 +26,21 @@ export class LanguageService {
   }
 
   setLanguage(language: string) {
-    // Update translation service
-    this.translate.use(language);
+    // Update translation service: set default and use the selected language.
+    try {
+      this.translate.setDefaultLang(language);
+      // `use` returns an Observable; subscribe to catch loading errors
+      this.translate.use(language).subscribe({
+        next: () => {
+          // success
+        },
+        error: (err) => {
+          console.error('Failed to load translations for', language, err);
+        },
+      });
+    } catch (e) {
+      console.error('Translate service error while setting language', e);
+    }
 
     // Update HTML attributes
     this.document.documentElement.lang = language;

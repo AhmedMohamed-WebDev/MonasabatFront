@@ -334,7 +334,11 @@
               <img [src]="service.images?.[0] || 'assets/placeholder.png'" [alt]="service.name"
                 (error)="onImageError($event)">
               <div class="image-overlay">
-                <button class="btn btn-sm btn-light" (click)="$event.stopPropagation()">❤️</button>
+                <button class="btn btn-sm btn-light" [class.in-wishlist]="isInWishlist(service._id)"
+                  [disabled]="wishlistLoading[service._id]" (click)="toggleWishlist($event, service._id)"
+                  [title]="isInWishlist(service._id) ? 'Remove from wishlist' : 'Add to wishlist'">
+                  {{ isInWishlist(service._id) ? '❤️' : '🤍' }}
+                </button>
               </div>
             </div>
 

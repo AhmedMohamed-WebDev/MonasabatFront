@@ -4,10 +4,7 @@ import { TranslateService } from '@ngx-translate/core';
 
 @Injectable({ providedIn: 'root' })
 export class AppNameService {
-  constructor(
-    private translate: TranslateService,
-    private title: Title
-  ) {}
+  constructor(private translate: TranslateService, private title: Title) {}
 
   init() {
     const applyTitle = () => {
@@ -32,7 +29,9 @@ export class AppNameService {
 
   getAppName(): string {
     return (
-      this.translate.instant('appName') || this.translate.instant('header.brandName') || 'Lamitna'
+      this.translate.instant('appName') ||
+      this.translate.instant('header.brandName') ||
+      'Lamitna'
     );
   }
 }

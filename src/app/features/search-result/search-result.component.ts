@@ -1,10 +1,13 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { Subject, takeUntil } from 'rxjs';
 import { SearchService } from '../../core/services/search-result.service';
 import { EventItemService } from '../../core/services/event-item.service';
+import { WishlistService } from '../../core/services/wishlist.service';
+import { AuthService } from '../../core/services/auth.service';
 import { EventItem } from '../../core/models/event-item.model';
 import { LanguageService } from '../../core/services/language.service';
 import { TranslationService } from '../../core/services/translation.service';
@@ -43,7 +46,7 @@ interface PeopleRange {
   templateUrl: './search-result.component.html',
   styleUrls: ['./search-result.component.css'],
 })
-export class SearchResultComponent implements OnInit {
+export class SearchResultComponent implements OnInit, OnDestroy {
   results: EventItem[] = [];
   filteredResults: EventItem[] = [];
   loading = false;
@@ -109,6 +112,8 @@ export class SearchResultComponent implements OnInit {
     private router: Router,
     private searchService: SearchService,
     private eventItemService: EventItemService,
+    private wishlistService: WishlistService,
+    private authService: AuthService,
     private translate: TranslateService,
     private languageService: LanguageService,
     private translationService: TranslationService
@@ -171,6 +176,23 @@ export class SearchResultComponent implements OnInit {
     this.translate.onLangChange.subscribe(() => {
       this.updateLookups();
     });
+
+    // Keep wishlist statuses in sync across the app so hearts update instantly.
+    this.wishlistService.wishlistIds$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((ids: string[]) => {
+        const idSet = new Set(ids || []);
+        this.results.forEach((s: any) => {
+          if (s && s._id) {
+            this.wishlistStatus[s._id] = idSet.has(s._id);
+          }
+        });
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   private updateLookups() {
@@ -325,8 +347,21 @@ export class SearchResultComponent implements OnInit {
         this.filteredResults = [...data];
         this.calculatePriceRange();
 
-        // Generate ratings for all services
-        data.forEach((service) => this.generateStarRating(service._id));
+        // Populate serviceRatings from denormalized fields (averageRating & ratingCount)
+        this.serviceRatings = {};
+        data.forEach((service: any) => {
+          if (
+            service &&
+            service.averageRating != null &&
+            service.ratingCount > 0
+          ) {
+            const rounded = Math.max(
+              1,
+              Math.min(5, Math.round(service.averageRating))
+            );
+            this.serviceRatings[service._id] = '⭐'.repeat(rounded);
+          }
+        });
 
         this.sortResults();
         this.loading = false;
@@ -506,24 +541,30 @@ export class SearchResultComponent implements OnInit {
   // Store ratings
   serviceRatings: { [key: string]: string } = {};
 
+  // Store wishlist status per service
+  wishlistStatus: { [key: string]: boolean } = {};
+  wishlistLoading: { [key: string]: boolean } = {};
+
+  private destroy$ = new Subject<void>();
+
   // Improved rating generation with more realistic distribution
   generateStarRating(serviceId: string): string {
-    if (!this.serviceRatings[serviceId]) {
-      // Generate more realistic ratings: 60% 4-5 stars, 30% 3-4 stars, 10% 2-3 stars
-      const rand = Math.random();
-      let rating: number;
-
-      if (rand < 0.6) {
-        rating = Math.floor(Math.random() * 2) + 4; // 4-5 stars
-      } else if (rand < 0.9) {
-        rating = Math.floor(Math.random() * 2) + 3; // 3-4 stars
-      } else {
-        rating = Math.floor(Math.random() * 2) + 2; // 2-3 stars
-      }
-
-      this.serviceRatings[serviceId] = '⭐'.repeat(rating);
+    if (this.serviceRatings[serviceId]) {
+      return this.serviceRatings[serviceId];
     }
-    return this.serviceRatings[serviceId];
+    // Fallback: try to find service in results and use its denormalized rating
+    const service = this.results.find((s) => s._id === serviceId) as any;
+    if (service && service.averageRating != null && service.ratingCount > 0) {
+      const rounded = Math.max(
+        1,
+        Math.min(5, Math.round(service.averageRating))
+      );
+      const stars = '⭐'.repeat(rounded);
+      this.serviceRatings[serviceId] = stars;
+      return stars;
+    }
+    // If no real rating exists, return empty (no fake ratings)
+    return '';
   }
 
   // Get rating value for sorting
@@ -798,6 +839,44 @@ export class SearchResultComponent implements OnInit {
   // Icon helper for template
   getServiceIconClass(category?: string, subcategory?: string): string {
     return getServiceIconClass(category, subcategory);
+  }
+
+  // Wishlist helpers
+  isUserLoggedIn(): boolean {
+    return this.authService.isAuthenticated();
+  }
+
+  isInWishlist(serviceId: string): boolean {
+    return this.wishlistStatus[serviceId] === true;
+  }
+
+  toggleWishlist(event: Event, serviceId: string) {
+    event.stopPropagation();
+
+    if (!this.isUserLoggedIn()) {
+      this.translate.get('common.pleaseLogin').subscribe((msg) => {
+        alert(msg || 'Please login to add to wishlist');
+      });
+      this.router.navigate(['/login']);
+      return;
+    }
+
+    this.wishlistLoading[serviceId] = true;
+
+    this.wishlistService.toggleWishlist(serviceId).subscribe({
+      next: (response: any) => {
+        // update local flag optimistically; service will emit a new ids list
+        this.wishlistStatus[serviceId] = !!response.added;
+        this.wishlistLoading[serviceId] = false;
+      },
+      error: (error: any) => {
+        console.error('Wishlist toggle failed:', error);
+        this.wishlistLoading[serviceId] = false;
+        this.translate.get('common.error').subscribe((msg) => {
+          alert(msg || 'Failed to update wishlist');
+        });
+      },
+    });
   }
 
   // Chips helpers

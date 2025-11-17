@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { AuthComponent } from './features/auth/auth.component';
 import { AdminGuard } from './core/guards/admin.guard';
 import { RoleGuard } from './core/guards/role.guard';
+import { authGuard } from './core/guards/auth.guard';
 import { ViewServiceComponent } from './features/view-service/view-service.component';
 import { LayoutComponent } from './layout/layout.component';
 
@@ -132,6 +133,14 @@ export const routes: Routes = [
           import('./features/about/about.component').then(
             (c) => c.AboutComponent
           ),
+      },
+      {
+        path: 'wishlist',
+        loadComponent: () =>
+          import('./features/wishlist/wishlist.component').then(
+            (m) => m.WishlistComponent
+          ),
+        canActivate: [authGuard],
       },
       {
         path: 'contact',

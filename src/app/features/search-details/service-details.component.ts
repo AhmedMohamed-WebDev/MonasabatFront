@@ -12,17 +12,26 @@ import {
   ContactChatAccess,
 } from '../../core/services/contact-chat.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { FormsModule } from '@angular/forms';
 import { LanguageService } from '../../core/services/language.service';
 import { TranslationService } from '../../core/services/translation.service';
 import { isContactOnlyService } from '../../core/models/constants/categories.const';
 import { NotificationService } from '../../core/services/notification.service';
+import { RatingService } from '../../core/services/rating.service';
 import { PhoneUtils } from '../../core/utils/phone.utils';
+import { StarPickerComponent } from '../../shared/components/star-picker/star-picker.component';
 import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-service-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, TranslateModule],
+  imports: [
+    CommonModule,
+    RouterModule,
+    TranslateModule,
+    StarPickerComponent,
+    FormsModule,
+  ],
   templateUrl: './service-details.component.html',
   styleUrls: ['./service-details.component.css'],
 })
@@ -67,13 +76,14 @@ export class ServiceDetailComponent implements OnInit, OnDestroy {
     private serviceDetailService: ServiceDetailService,
 
     private chatService: ChatService,
-    private authService: AuthService,
+    public authService: AuthService,
     private contactService: ContactService,
     private contactChatService: ContactChatService,
     private translate: TranslateService,
     private languageService: LanguageService,
     private translationService: TranslationService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private ratingService: RatingService
   ) {}
 
   ngOnInit() {
@@ -81,6 +91,9 @@ export class ServiceDetailComponent implements OnInit, OnDestroy {
       this.serviceId = params['id'];
       this.loadServiceDetails();
     });
+
+    // fetch rating summary and eligibility when language or route changes
+    // (will be triggered inside loadServiceDetails as well)
 
     // Subscribe to language changes
     this.translate.onLangChange.pipe(takeUntil(this.destroy$)).subscribe(() => {
@@ -110,7 +123,14 @@ export class ServiceDetailComponent implements OnInit, OnDestroy {
       next: (data: any) => {
         console.log('Service detail fetched:', data);
         this.service = data;
-        this.serviceRating = this.generateStarRating();
+        // prefer server-provided aggregated rating when available
+        if (this.service.ratingCount && this.service.ratingCount > 0) {
+          this.serviceRating = this.getStarsFromAverage(
+            this.service.averageRating
+          );
+        } else {
+          this.serviceRating = this.generateStarRating();
+        }
         this.googleMapUrl = data.googleMapUrl || '';
         this.directionUrl = data.directionUrl || '';
 
@@ -124,6 +144,30 @@ export class ServiceDetailComponent implements OnInit, OnDestroy {
 
         this.loadRelatedServices();
         this.loading = false;
+
+        // load rating summary and eligibility
+        this.loadRatingSummary();
+        this.checkRatingEligibility();
+        // explicit fetch of user's rating to ensure prefill even if not in recent reviews
+        this.ratingService
+          .getMyRating(this.serviceId)
+          .pipe(takeUntil(this.destroy$))
+          .subscribe({
+            next: (res: any) => {
+              const my = res?.rating || null;
+              if (my) {
+                this.myPendingScore = my.score;
+                this.myPendingComment = my.comment;
+                this.eligibleToRate = true;
+              }
+              // still load recent reviews for display
+              this.loadReviews();
+            },
+            error: (err) => {
+              // if request fails (e.g., not authenticated), still load recent reviews
+              this.loadReviews();
+            },
+          });
       },
       error: (error) => {
         console.error('Error fetching service details:', error);
@@ -131,6 +175,134 @@ export class ServiceDetailComponent implements OnInit, OnDestroy {
         this.loading = false;
       },
     });
+  }
+
+  // Rating-related state
+  public averageRating = 0;
+  public ratingCount = 0;
+  public eligibleToRate = false;
+  public myPendingScore?: number;
+  public myPendingComment?: string;
+  public recentReviews: any[] = [];
+
+  loadRatingSummary() {
+    if (!this.serviceId) return;
+    this.ratingService
+      .getSummary(this.serviceId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res: any) => {
+          this.averageRating = res.averageRating || 0;
+          this.ratingCount = res.ratingCount || 0;
+          if (this.ratingCount > 0) {
+            this.serviceRating = this.getStarsFromAverage(this.averageRating);
+          }
+        },
+        error: (err) => {
+          console.error('Failed loading rating summary', err);
+        },
+      });
+  }
+
+  loadReviews() {
+    if (!this.serviceId) return;
+    this.ratingService
+      .getRatings(this.serviceId, 1, 5)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res: any) => {
+          const list = res?.ratings || res?.docs || res?.data || res || [];
+          const arr = Array.isArray(list) ? list : list.items || [];
+          this.recentReviews = arr;
+
+          // prefill user's own rating if present in fetched reviews
+          const current = this.authService.getCurrentUser();
+          if (current) {
+            const my = this.recentReviews.find(
+              (r: any) =>
+                r.user &&
+                (r.user._id === current.id || r.user.id === current.id)
+            );
+            if (my) {
+              this.myPendingScore = my.score;
+              this.myPendingComment = my.comment;
+              this.eligibleToRate = true;
+            }
+          }
+        },
+        error: (err) => {
+          console.error('Failed loading reviews', err);
+        },
+      });
+  }
+
+  checkRatingEligibility() {
+    if (!this.serviceId || !this.authService.isAuthenticated()) {
+      this.eligibleToRate = false;
+      return;
+    }
+    this.ratingService
+      .checkEligibility(this.serviceId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res: any) => {
+          this.eligibleToRate = !!res.eligible;
+        },
+        error: (err) => {
+          console.error('Eligibility check failed', err);
+          this.eligibleToRate = false;
+        },
+      });
+  }
+
+  submitMyRating() {
+    if (!this.serviceId || !this.authService.isAuthenticated()) {
+      this.router.navigate(['/login'], {
+        queryParams: { returnUrl: `/service/${this.serviceId}` },
+      });
+      return;
+    }
+
+    // Basic validation
+    const score = Number(this.myPendingScore || 0);
+    if (!Number.isInteger(score) || score < 1 || score > 5) {
+      this.notificationService.show(
+        'error',
+        'Invalid rating',
+        'Please provide a rating between 1 and 5'
+      );
+      return;
+    }
+
+    this.ratingService
+      .submitRating(this.serviceId, score, this.myPendingComment || '')
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res: any) => {
+          this.notificationService.show(
+            'success',
+            'Thank you',
+            'Your rating was saved'
+          );
+          this.averageRating = res.averageRating || 0;
+          this.ratingCount = res.ratingCount || 0;
+          this.serviceRating = this.getStarsFromAverage(this.averageRating);
+          this.eligibleToRate = true;
+        },
+        error: (err) => {
+          console.error('Submit rating failed', err);
+          this.notificationService.show(
+            'error',
+            'Failed',
+            err.error?.message || 'Failed to submit rating'
+          );
+        },
+      });
+  }
+
+  public getStarsFromAverage(avg: number): string {
+    const rounded = Math.round(avg);
+    return '⭐'.repeat(Math.max(1, Math.min(5, rounded)));
   }
 
   loadRelatedServices() {
@@ -487,8 +659,8 @@ export class ServiceDetailComponent implements OnInit, OnDestroy {
   }
 
   private generateStarRating(): string {
-    const rating = Math.floor(Math.random() * 2) + 4;
-    return '⭐'.repeat(rating);
+    // No fake ratings - if there's no real rating data, return empty
+    return '';
   }
 
   // Helper method to get translated category

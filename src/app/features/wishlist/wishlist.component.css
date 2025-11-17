@@ -1,0 +1,5 @@
+/* Minimal styles for wishlist */
+.card img {
+  max-height: 160px;
+  object-fit: cover;
+}

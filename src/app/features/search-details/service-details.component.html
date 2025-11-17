@@ -300,6 +300,43 @@
           </div>
 
           <!-- Related Services -->
+          <div class="rating-card mt-4">
+            <h4 class="related-title">{{ 'serviceDetails.rating.title' | translate }}</h4>
+            <div class="rating-summary d-flex align-items-center justify-content-between mb-2">
+              <div>
+                <div class="h4 mb-0">{{ averageRating ? (averageRating | number:'1.1-1') : '0.0' }}</div>
+                <small class="text-muted">{{ ratingCount }} reviews</small>
+              </div>
+              <div class="ms-3">
+                <app-star-picker [value]="myPendingScore || averageRating" [readonly]="!eligibleToRate"
+                  (rate)="myPendingScore = $event"></app-star-picker>
+              </div>
+            </div>
+
+            <div *ngIf="eligibleToRate" class="rating-input">
+              <textarea class="form-control mb-2" [(ngModel)]="myPendingComment" rows="2"
+                placeholder="{{ 'serviceDetails.rating.commentPlaceholder' | translate }}"></textarea>
+              <button class="btn btn-warning w-100" (click)="submitMyRating()">{{ 'serviceDetails.rating.submit' |
+                translate }}</button>
+            </div>
+
+            <div *ngIf="!eligibleToRate && authService.isAuthenticated()" class="text-muted mt-2">
+              {{ 'serviceDetails.rating.mustBeEligible' | translate }}
+            </div>
+
+            <div *ngIf="recentReviews?.length" class="reviews mt-3">
+              <h6 class="mb-2">{{ 'serviceDetails.rating.reviewsHeading' | translate }}</h6>
+              <div *ngFor="let r of recentReviews" class="review-item border-top pt-2">
+                <div class="d-flex justify-content-between align-items-center">
+                  <div><strong>{{ r.user?.name || r.user?.email || 'Anonymous' }}</strong></div>
+                  <div class="small text-muted">{{ getStarsFromAverage(r.score) }} <span class="ms-2">{{ r.score
+                      }}/5</span></div>
+                </div>
+                <div *ngIf="r.comment" class="mt-1">{{ r.comment }}</div>
+                <div class="small text-muted mt-1">{{ r.createdAt | date }}</div>
+              </div>
+            </div>
+          </div>
           <div class="related-services" *ngIf="relatedServices?.length">
             <h4 class="related-title">{{ 'serviceDetails.related.title' | translate }}</h4>
             <div class="related-list">

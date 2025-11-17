@@ -11,7 +11,15 @@
   "common": {
     "cancel": "Cancel",
     "apply": "Apply",
-    "brandName": "Lamitna"
+    "brandName": "Lamitna",
+    "pleaseLogin": "Please login to add to wishlist",
+    "error": "An error occurred. Please try again."
+  },
+
+  "wishlist": {
+    "title": "My Wishlist",
+    "empty": "You haven't saved any services yet.",
+    "remove": "Remove"
   },
   "home": {
     "heroTitle": "Find Perfect Event Services",
@@ -345,6 +353,14 @@
     },
     "related": {
       "title": "Related Services"
+    },
+    "rating": {
+      "title": "Ratings & Reviews",
+      "commentPlaceholder": "Write a short review (optional)",
+      "submit": "Submit Review",
+      "mustBeEligible": "You must have booked or had an accepted contact request to leave a review.",
+      "reviewsHeading": "Recent Reviews",
+      "yourRatingLabel": "Your Rating"
     }
   },
   "cities": {
