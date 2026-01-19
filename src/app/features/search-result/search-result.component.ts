@@ -72,6 +72,7 @@ export class SearchResultComponent implements OnInit, OnDestroy {
     priceRange: { min: 0, max: 10000 },
     // Location filters
     showNearby: false,
+    selectedCountry: 'jordan',
     selectedCity: '',
     // Availability filters
     availableOnDate: '',
@@ -80,29 +81,45 @@ export class SearchResultComponent implements OnInit, OnDestroy {
   // Lookup data
   eventCategories: CategoryConfig[] = [];
   peopleRanges: PeopleRange[] = [];
-  cities = [
-    // Jordan cities
-    'Amman',
-    'Irbid',
-    'Zarqa',
-    'Jerash',
-    'Balqa',
-    'Aqaba',
-    'Salt',
-    'Madaba',
-    'Karak',
-    'Tafilah',
-    // Kuwait cities
-    'Kuwait City',
-    'Ahmadi',
-    'Hawalli',
-    'Jahra',
-    'Farwaniya',
-    'Mubarak Al-Kabeer',
-    'Salmiya',
-    'Fahaheel',
-  ];
+
+  // Cities organized by country
+  citiesByCountry = {
+    jordan: [
+      'Amman',
+      'Irbid',
+      'Zarqa',
+      'Jerash',
+      'Balqa',
+      'Aqaba',
+      'Salt',
+      'Madaba',
+      'Karak',
+      'Tafilah',
+      'Maan',
+      'Ramtha',
+    ],
+    kuwait: [
+      'Kuwait City',
+      'Ahmadi',
+      'Hawalli',
+      'Jahra',
+      'Farwaniya',
+      'Mubarak Al-Kabeer',
+      'Salmiya',
+      'Fahaheel',
+    ],
+  };
+
+  // Keep all cities for backward compatibility
+  cities = [...this.citiesByCountry.jordan, ...this.citiesByCountry.kuwait];
   translatedCities: TranslatedCity[] = [];
+  translatedCitiesByCountry: {
+    jordan: TranslatedCity[];
+    kuwait: TranslatedCity[];
+  } = {
+    jordan: [],
+    kuwait: [],
+  };
 
   // Debounce id for price changes
   private priceDebounceId: any = null;
@@ -160,6 +177,13 @@ export class SearchResultComponent implements OnInit, OnDestroy {
         this.filters.selectedSubcategories = [];
       }
 
+      // Sync country from query params
+      if (this.currentParams['country']) {
+        this.filters.selectedCountry = this.currentParams['country'];
+      } else {
+        this.filters.selectedCountry = 'jordan'; // default
+      }
+
       // Sync new filter parameters
       if (this.currentParams['nearby']) {
         this.filters.showNearby = this.currentParams['nearby'] === 'true';
@@ -201,10 +225,9 @@ export class SearchResultComponent implements OnInit, OnDestroy {
     this.eventCategories =
       this.translationService.getTranslatedServiceCategories();
     this.peopleRanges = this.translationService.getTranslatedPeopleRanges();
-    this.translatedCities = this.cities.map((city) => {
-      let translationKey = '';
 
-      // Map city names to translation keys
+    // Helper function to get translation key for a city
+    const getTranslationKey = (city: string): string => {
       switch (city) {
         case 'Amman':
         case 'Irbid':
@@ -214,11 +237,13 @@ export class SearchResultComponent implements OnInit, OnDestroy {
         case 'Madaba':
         case 'Karak':
         case 'Tafilah':
-          translationKey = `cities.jordan.${city.toLowerCase()}`;
-          break;
+        case 'Jerash':
+        case 'Balqa':
+        case 'Maan':
+        case 'Ramtha':
+          return `cities.jordan.${city.toLowerCase()}`;
         case 'Kuwait City':
-          translationKey = 'cities.kuwait.kuwait_city';
-          break;
+          return 'cities.kuwait.kuwait_city';
         case 'Ahmadi':
         case 'Hawalli':
         case 'Jahra':
@@ -226,19 +251,31 @@ export class SearchResultComponent implements OnInit, OnDestroy {
         case 'Mubarak Al-Kabeer':
         case 'Salmiya':
         case 'Fahaheel':
-          translationKey = `cities.kuwait.${city
-            .toLowerCase()
-            .replace(/[\s\-]/g, '_')}`;
-          break;
+          return `cities.kuwait.${city.toLowerCase().replace(/[\s\-]/g, '_')}`;
         default:
-          translationKey = `cities.jordan.${city.toLowerCase()}`;
+          return `cities.jordan.${city.toLowerCase()}`;
       }
+    };
 
-      return {
+    // Update all cities translation (for backward compatibility)
+    this.translatedCities = this.cities.map((city) => ({
+      original: city,
+      translated: this.translate.instant(getTranslationKey(city)),
+    }));
+
+    // Update country-specific cities translation
+    this.translatedCitiesByCountry.jordan = this.citiesByCountry.jordan.map(
+      (city) => ({
         original: city,
-        translated: this.translate.instant(translationKey),
-      };
-    });
+        translated: this.translate.instant(getTranslationKey(city)),
+      })
+    );
+    this.translatedCitiesByCountry.kuwait = this.citiesByCountry.kuwait.map(
+      (city) => ({
+        original: city,
+        translated: this.translate.instant(getTranslationKey(city)),
+      })
+    );
   }
   private navigateWith(paramsPatch: any) {
     const newParams: any = { ...this.currentParams, ...paramsPatch };
@@ -281,6 +318,12 @@ export class SearchResultComponent implements OnInit, OnDestroy {
 
     const param = Array.isArray(value) ? value.join(',') : String(value);
     this.navigateWith({ subcategory: param });
+  }
+
+  onCountryChange(value: string) {
+    // When country changes, reset city to empty
+    this.filters.selectedCountry = value || 'jordan';
+    this.navigateWith({ country: value || 'jordan', city: '' });
   }
 
   onCityChange(value: string) {
@@ -618,6 +661,12 @@ export class SearchResultComponent implements OnInit, OnDestroy {
   ): string | undefined {
     if (!subcategory) return undefined;
     return Array.isArray(subcategory) ? subcategory[0] : subcategory;
+  }
+
+  // Get cities for the currently selected country
+  getCountryCities(): TranslatedCity[] {
+    const country = this.filters.selectedCountry || 'jordan';
+    return this.translatedCitiesByCountry[country as 'jordan' | 'kuwait'] || [];
   }
 
   getSelectedPeopleLabel(): string {

@@ -48,7 +48,8 @@
     "popularCategories": "الفئات الأكثر شهرة",
     "popularCategoriesSubtitle": "تصفح أشهر أنواع المناسبات",
     "otherEvents": "مناسبات أخري",
-    "events": "مناسبات"
+    "events": "مناسبات",
+    "countryLabel": "الدولة"
   },
   "footer": {
     "brandName": "لمتنا",

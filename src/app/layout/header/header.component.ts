@@ -25,7 +25,7 @@ import { Router } from '@angular/router';
       <div class="container">
         <!-- Brand -->
         <a class="navbar-brand fw-bold text-dark" routerLink="/">
-          <span class="text-warning">✨</span>
+          <img src="/assets/icon.ico" alt="Lamitna" class="brand-icon">
           {{ getCurrentLanguage() === 'ar' ? 'لمتنا' : 'Lamitna' }}
         </a>
 
@@ -57,7 +57,7 @@ import { Router } from '@angular/router';
             routerLink="/"
             (click)="closeDrawer()"
           >
-            <span class="text-warning">✨</span>
+            <img src="/assets/icon.ico" alt="Lamitna" class="brand-icon">
             {{ getCurrentLanguage() === 'ar' ? 'لمتنا' : 'Lamitna' }}
           </a>
           <ng-container
@@ -176,299 +176,108 @@ import { Router } from '@angular/router';
   styles: [
     `
       .navbar {
-        padding: 0.75rem 0;
-        min-height: 70px;
-        background: linear-gradient(135deg, #ffffff 0%, #fafbfc 100%);
-        border-bottom: 1px solid rgba(203, 161, 53, 0.15);
-        backdrop-filter: blur(10px);
-        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+        padding: 1rem 0;
+        min-height: 64px;
       }
-
-      .navbar-brand {
-        font-size: 1.6rem;
-        letter-spacing: -0.5px;
-        font-weight: 700;
-        transition: all 0.3s ease;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-      }
-
-      .navbar-brand:hover {
-        transform: translateY(-2px);
-        color: #ffc107 !important;
-      }
-
-      .navbar-brand span {
-        font-size: 1.8rem;
-        animation: float 3s ease-in-out infinite;
-      }
-
-      @keyframes float {
-        0%, 100% { transform: translateY(0px); }
-        50% { transform: translateY(-4px); }
-      }
-
       .navbar-toggler {
         border: none;
         background: transparent;
-        font-size: 1.5rem;
+        font-size: 2rem;
         color: var(--accent-gold);
         outline: none;
-        padding: 0.5rem;
-        transition: transform 0.3s ease;
       }
-
-      .navbar-toggler:hover {
-        transform: scale(1.1);
-      }
-
       .navbar-toggler:focus {
-        box-shadow: 0 0 0 0.3rem rgba(203, 161, 53, 0.25);
+        box-shadow: 0 0 0 0.2rem rgba(203, 161, 53, 0.25);
       }
-
       .navbar-toggler-icon {
         display: inline-block;
-        width: 1.8rem;
-        height: 1.8rem;
-        background: url("data:image/svg+xml;utf8,<svg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'><path stroke='%23cba135' stroke-width='2.5' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/></svg>")
+        width: 2rem;
+        height: 2rem;
+        background: url("data:image/svg+xml;utf8,<svg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'><path stroke='%23cba135' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/></svg>")
           center/contain no-repeat;
       }
-
-      .navbar-nav {
-        display: flex;
-        align-items: center;
-        gap: 1.2rem;
-      }
-
       .drawer-menu {
         display: flex;
         flex-direction: column;
-        gap: 1.5rem;
+        gap: 1.2rem;
         margin-top: 2rem;
         align-items: stretch;
       }
-
-      .btn {
-        font-weight: 600;
-        letter-spacing: 0.3px;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        border-radius: 8px;
-      }
-
-      .btn-warning {
-        background: linear-gradient(135deg, #ffc107 0%, #ffb300 100%);
-        border: none;
-        color: #1a1a1a;
-        box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
-      }
-
-      .btn-warning:hover {
-        background: linear-gradient(135deg, #ffb300 0%, #ffa500 100%);
-        box-shadow: 0 6px 20px rgba(255, 193, 7, 0.4);
-        transform: translateY(-2px);
-      }
-
-      .btn-warning:active {
-        transform: translateY(0);
-        box-shadow: 0 2px 8px rgba(255, 193, 7, 0.25);
-      }
-
-      .btn-outline-secondary {
-        color: #6c757d;
-        border: 1.5px solid #dee2e6;
-        transition: all 0.3s ease;
-      }
-
-      .btn-outline-secondary:hover {
-        background: #f8f9fa;
-        border-color: #adb5bd;
-        color: #495057;
-      }
-
-      .btn-outline-primary {
-        color: #0d6efd;
-        border: 1.5px solid #0d6efd;
-        font-weight: 600;
-      }
-
-      .btn-outline-primary:hover {
-        background: #0d6efd;
-        color: white;
-        box-shadow: 0 4px 12px rgba(13, 110, 253, 0.3);
-      }
-
       .join-supplier-btn {
-        font-weight: 700;
+        font-weight: 600;
         letter-spacing: 0.5px;
-        background: linear-gradient(135deg, #cba135 0%, #b8931c 100%);
-        border: none;
-        color: white;
-        box-shadow: 0 4px 16px rgba(203, 161, 53, 0.25);
+        box-shadow: 0 2px 8px rgba(203, 161, 53, 0.08);
+        transition: background 0.2s, color 0.2s;
       }
-
       .join-supplier-btn:hover {
-        background: linear-gradient(135deg, #b8931c 0%, #a67f0f 100%);
-        box-shadow: 0 6px 24px rgba(203, 161, 53, 0.35);
-        transform: translateY(-2px);
+        background: var(--accent-gold, #cba135);
+        color: #fff;
+        border-color: var(--accent-gold, #cba135);
       }
-
-      .dropdown-menu {
-        border: none;
-        border-radius: 12px;
-        padding: 0.75rem 0;
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-        animation: slideDown 0.2s ease;
-      }
-
-      @keyframes slideDown {
-        from {
-          opacity: 0;
-          transform: translateY(-10px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-
-      .dropdown-item {
-        padding: 0.75rem 1.5rem;
-        transition: all 0.2s ease;
-        color: #495057;
-      }
-
-      .dropdown-item:hover {
-        background: rgba(203, 161, 53, 0.08);
-        color: #cba135;
-        padding-left: 1.75rem;
-      }
-
-      .dropdown-item.text-danger:hover {
-        background: rgba(220, 53, 69, 0.08);
-        color: #dc3545 !important;
-      }
-
       .drawer-contact-info {
-        background: linear-gradient(135deg, #f8f9fa 0%, #f0f2f5 100%);
-        border-radius: 12px;
-        padding: 1.25rem 1rem;
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 1rem 0.75rem;
         margin-bottom: 0.5rem;
-        box-shadow: 0 2px 8px rgba(44, 44, 44, 0.06);
-        border: 1px solid rgba(203, 161, 53, 0.1);
+        box-shadow: 0 1px 4px rgba(44, 44, 44, 0.04);
       }
-
       .drawer-contact-info i {
-        min-width: 24px;
+        min-width: 20px;
         text-align: center;
-        color: #cba135;
       }
-
       .drawer-contact-info a {
         text-decoration: none;
-        transition: all 0.2s ease;
-        font-weight: 500;
       }
-
       .drawer-contact-info a:hover {
         color: var(--accent-gold, #cba135) !important;
-        text-decoration: underline;
       }
-
       .drawer-copyright {
-        margin-top: 1rem;
-        color: #adb5bd !important;
-        font-size: 0.85rem;
+        margin-top: 0.5rem;
+        color: #bdbdbd !important;
       }
-
       .wishlist-btn {
         position: relative;
-        padding: 0.6rem 0.9rem;
-        min-width: 44px;
-        height: 44px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 8px;
-        transition: all 0.3s ease;
-        background: #f8f9fa;
+        padding-right: 0.9rem;
       }
-
-      .wishlist-btn:hover {
-        background: rgba(203, 161, 53, 0.1);
-        color: #cba135;
-      }
-
-      .wishlist-btn i {
-        font-size: 1.2rem;
-      }
-
       .wishlist-badge {
         position: absolute;
-        top: -8px;
-        right: -8px;
-        min-width: 24px;
-        height: 24px;
-        display: flex;
+        top: -6px;
+        right: -6px;
+        min-width: 20px;
+        height: 20px;
+        display: inline-flex;
         align-items: center;
         justify-content: center;
-        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        background: #dc3545;
         color: white;
         border-radius: 999px;
         font-size: 11px;
-        font-weight: 700;
         line-height: 1;
-        padding: 0 6px;
-        box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
-        border: 2px solid white;
-        animation: bounce 0.5s ease;
+        padding: 0 5px;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
       }
-
-      @keyframes bounce {
-        0%, 100% { transform: scale(1); }
-        50% { transform: scale(1.15); }
+      .brand-icon {
+        height: 1.5rem;
+        width: 1.5rem;
+        margin-right: 0.5rem;
+        vertical-align: middle;
+        display: inline-block;
       }
-
       @media (max-width: 991.98px) {
-        .navbar {
-          min-height: 64px;
-        }
-
-        .navbar-brand {
-          font-size: 1.4rem;
-        }
-
         .navbar-nav {
           display: none !important;
         }
-
-        .side-drawer-open .container > :not(.navbar-brand):not(.navbar-toggler) {
+        .side-drawer-open
+          .container
+          > :not(.navbar-brand):not(.navbar-toggler) {
           display: none !important;
         }
-
         .side-drawer-open .navbar-toggler {
           z-index: 1051;
         }
-      }
-
-      @media (max-width: 576px) {
-        .navbar {
-          padding: 0.5rem 0;
-          min-height: 60px;
-        }
-
-        .navbar-brand {
-          font-size: 1.3rem;
-          gap: 0.3rem;
-        }
-
-        .navbar-brand span {
-          font-size: 1.4rem;
-        }
-
-        .drawer-menu {
-          gap: 1rem;
-          margin-top: 1.5rem;
+        .side-drawer-open {
+          /* Optionally add a subtle blur or dim effect to header when drawer is open */
+          /* filter: blur(2px); */
         }
       }
     `,

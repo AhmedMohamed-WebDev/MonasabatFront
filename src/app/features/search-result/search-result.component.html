@@ -101,12 +101,20 @@
 
     <!-- City-only mode -->
     <ng-container *ngIf="filtersSheetMode === 'city'; else allFilters">
+      <div class="mb-3" id="fs-country">
+        <label class="form-label small">{{ 'home.countryLabel' | translate }}</label>
+        <select class="form-select form-select-sm" [ngModel]="filters.selectedCountry"
+          (ngModelChange)="onCountryChange($event)">
+          <option value="jordan">{{ 'cities.jordan.title' | translate }}</option>
+          <option value="kuwait">{{ 'cities.kuwait.title' | translate }}</option>
+        </select>
+      </div>
       <div class="mb-3" id="fs-city">
         <label class="form-label small">{{ 'home.cityLabel' | translate }}</label>
         <select class="form-select form-select-sm" [ngModel]="currentParams.city"
           (ngModelChange)="onCityChange($event)">
           <option value="">{{ 'home.selectCity' | translate }}</option>
-          <option *ngFor="let city of translatedCities" [value]="city.original">{{ city.translated }}</option>
+          <option *ngFor="let city of getCountryCities()" [value]="city.original">{{ city.translated }}</option>
         </select>
       </div>
       <div class="text-end">
@@ -134,12 +142,21 @@
         <small class="text-muted">{{ 'search.filters.multiSelectInfo' | translate }}</small>
       </div>
 
+      <div class="mb-3" id="fs-country">
+        <label class="form-label small">{{ 'home.countryLabel' | translate }}</label>
+        <select class="form-select form-select-sm" [ngModel]="filters.selectedCountry"
+          (ngModelChange)="onCountryChange($event)">
+          <option value="jordan">{{ 'cities.jordan.title' | translate }}</option>
+          <option value="kuwait">{{ 'cities.kuwait.title' | translate }}</option>
+        </select>
+      </div>
+
       <div class="mb-3" id="fs-city">
         <label class="form-label small">{{ 'home.cityLabel' | translate }}</label>
         <select class="form-select form-select-sm" [ngModel]="currentParams.city"
           (ngModelChange)="onCityChange($event)">
           <option value="">{{ 'home.selectCity' | translate }}</option>
-          <option *ngFor="let city of translatedCities" [value]="city.original">{{ city.translated }}</option>
+          <option *ngFor="let city of getCountryCities()" [value]="city.original">{{ city.translated }}</option>
         </select>
       </div>
 
@@ -197,11 +214,20 @@
         </div>
 
         <div class="filter-section">
+          <h6 class="filter-title">{{ 'home.countryLabel' | translate }}</h6>
+          <select class="form-select form-select-sm" [ngModel]="filters.selectedCountry"
+            (ngModelChange)="onCountryChange($event)">
+            <option value="jordan">{{ 'cities.jordan.title' | translate }}</option>
+            <option value="kuwait">{{ 'cities.kuwait.title' | translate }}</option>
+          </select>
+        </div>
+
+        <div class="filter-section">
           <h6 class="filter-title">{{ 'home.cityLabel' | translate }}</h6>
           <select class="form-select form-select-sm" [ngModel]="currentParams.city"
             (ngModelChange)="onCityChange($event)">
             <option value="">{{ 'home.selectCity' | translate }}</option>
-            <option *ngFor="let city of translatedCities" [value]="city.original">{{ city.translated }}</option>
+            <option *ngFor="let city of getCountryCities()" [value]="city.original">{{ city.translated }}</option>
           </select>
         </div>
 

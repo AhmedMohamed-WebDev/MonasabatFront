@@ -48,7 +48,8 @@
     "popularCategories": "Popular Categories",
     "popularCategoriesSubtitle": "Browse the most popular event types",
     "otherEvents": "Other Events",
-    "events": "Events"
+    "events": "Events",
+    "countryLabel": "Country"
   },
   "footer": {
     "brandName": "Lamitna",
