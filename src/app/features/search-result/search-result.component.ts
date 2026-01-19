@@ -648,11 +648,22 @@ export class SearchResultComponent implements OnInit, OnDestroy {
     return this.translationService.instant(`subcategories.${value}`) || value;
   }
 
+  // Helper: determine which country a city belongs to
+  private getCityCountry(city: string): 'jordan' | 'kuwait' {
+    if (this.citiesByCountry.kuwait.includes(city)) {
+      return 'kuwait';
+    }
+    return 'jordan';
+  }
+
   getCityLabel(value: string): string {
-    return (
-      this.translationService.instant(`cities.jordan.${value.toLowerCase()}`) ||
-      value
-    );
+    if (!value) return value;
+    const country = this.getCityCountry(value);
+    const translationKey =
+      country === 'kuwait'
+        ? `cities.kuwait.${value.toLowerCase().replace(/[\s\-]/g, '_')}`
+        : `cities.jordan.${value.toLowerCase()}`;
+    return this.translationService.instant(translationKey) || value;
   }
 
   // Return primary subcategory string (first element) when service may have multiple
