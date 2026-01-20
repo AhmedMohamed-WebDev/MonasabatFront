@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   ReactiveFormsModule,
@@ -17,6 +17,7 @@ import { JoinStatus } from '../../core/models/join.model';
 import { TranslateService, TranslateModule } from '@ngx-translate/core';
 import { CategoryConfig } from '../../core/models/constants/categories.const';
 import { TranslationService } from '../../core/services/translation.service';
+import { SeoService } from '../../core/services/seo.service';
 
 @Component({
   selector: 'app-join',
@@ -25,7 +26,7 @@ import { TranslationService } from '../../core/services/translation.service';
   templateUrl: './join.component.html',
   styleUrls: ['./join.component.css'],
 })
-export class JoinComponent {
+export class JoinComponent implements OnInit {
   joinForm: FormGroup;
   isSubmitting = false;
   showSuccess = false;
@@ -81,7 +82,8 @@ export class JoinComponent {
     private phoneService: PhoneService,
     private router: Router,
     private translate: TranslateService,
-    private translationService: TranslationService
+    private translationService: TranslationService,
+    private seoService: SeoService,
   ) {
     this.joinForm = this.fb.group({
       country: ['jordan', Validators.required],
@@ -106,6 +108,50 @@ export class JoinComponent {
       }
       this.joinForm.get('otherServiceType')?.updateValueAndValidity();
     });
+  }
+
+  ngOnInit() {
+    // Set SEO metadata for Join page
+    this.seoService.setPageSEO({
+      title: 'Join Our Network - Become a Supplier on Lamitna',
+      titleAr: 'انضم إلى شبكتنا - اصبح مزود خدمات في لمتنا',
+      description:
+        'Join Lamitna as a service provider and grow your event business. Connect with thousands of customers looking for professional services in Kuwait.',
+      descriptionAr:
+        'انضم إلى لمتنا كمزود خدمات ونمي عملك في مجال الفعاليات. تواصل مع آلاف العملاء الذين يبحثون عن خدمات احترافية في الكويت.',
+      keywords: [
+        'join lamitna',
+        'become supplier',
+        'event business',
+        'service provider',
+        'Kuwait',
+      ],
+      keywordsAr: [
+        'انضم لمتنا',
+        'اصبح مزود خدمات',
+        'عمل في الفعاليات',
+        'مقدم الخدمات',
+        'الكويت',
+      ],
+      image: 'https://lamitna.com/assets/EnOr-image.png',
+      url: 'https://lamitna.com/join',
+      type: 'website',
+    });
+
+    // Add breadcrumb schema
+    this.seoService.addStructuredData(
+      this.seoService.getBreadcrumbSchema([
+        { name: 'Home', url: 'https://lamitna.com/home' },
+        { name: 'Join', url: 'https://lamitna.com/join' },
+      ]),
+    );
+
+    // Populate service categories
+    this.categories = this.translationService.getTranslatedServiceCategories();
+    this.translate.onLangChange.subscribe(() => {
+      this.categories =
+        this.translationService.getTranslatedServiceCategories();
+    });
 
     // Watch for phone country changes to update phone validation
     this.joinForm.get('phoneCountry')?.valueChanges.subscribe(() => {
@@ -117,15 +163,6 @@ export class JoinComponent {
       // Clear city when switching countries
       this.joinForm.get('city')?.setValue('');
       this.joinForm.get('city')?.updateValueAndValidity();
-    });
-  }
-
-  ngOnInit(): void {
-    // populate service categories
-    this.categories = this.translationService.getTranslatedServiceCategories();
-    this.translate.onLangChange.subscribe(() => {
-      this.categories =
-        this.translationService.getTranslatedServiceCategories();
     });
   }
 
@@ -191,7 +228,7 @@ export class JoinComponent {
       if (field.errors['pattern']) {
         const country = this.joinForm.get('phoneCountry')?.value || 'jordan';
         return this.translate.instant(
-          `join.form.validation.phoneInvalid.${country}`
+          `join.form.validation.phoneInvalid.${country}`,
         );
       }
     }

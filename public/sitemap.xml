@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <!-- Home page -->
+  <url>
+    <loc>https://lamitna.com/home</loc>
+    <lastmod>2024-01-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://lamitna.com/ar/home" />
+  </url>
+
+  <!-- Static pages -->
+  <url>
+    <loc>https://lamitna.com/about</loc>
+    <lastmod>2024-01-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://lamitna.com/ar/about" />
+  </url>
+
+  <url>
+    <loc>https://lamitna.com/contact</loc>
+    <lastmod>2024-01-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://lamitna.com/ar/contact" />
+  </url>
+
+  <url>
+    <loc>https://lamitna.com/search-results</loc>
+    <lastmod>2024-01-20</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://lamitna.com/ar/search-results" />
+  </url>
+
+  <url>
+    <loc>https://lamitna.com/join</loc>
+    <lastmod>2024-01-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://lamitna.com/ar/join" />
+  </url>
+
+  <url>
+    <loc>https://lamitna.com/terms</loc>
+    <lastmod>2024-01-20</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://lamitna.com/ar/terms" />
+  </url>
+
+  <!-- Service pages - these are dynamic and should be updated automatically -->
+  <!-- Sample service pages - configure your backend/build to generate actual service URLs -->
+  <url>
+    <loc>https://lamitna.com/service/sample-service-1</loc>
+    <lastmod>2024-01-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://lamitna.com/ar/service/sample-service-1" />
+  </url>
+
+  <!-- Internationalization (hreflang) -->
+  <url>
+    <loc>https://lamitna.com/ar/home</loc>
+    <lastmod>2024-01-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://lamitna.com/home" />
+  </url>
+</urlset>

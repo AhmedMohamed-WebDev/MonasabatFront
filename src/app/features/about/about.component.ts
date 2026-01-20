@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
+import { SeoService } from '../../core/services/seo.service';
 
 @Component({
   selector: 'app-about',
@@ -52,4 +53,36 @@ import { TranslateModule } from '@ngx-translate/core';
     `,
   ],
 })
-export class AboutComponent {}
+export class AboutComponent implements OnInit {
+  constructor(private seoService: SeoService) {}
+
+  ngOnInit() {
+    // Set SEO metadata for About page
+    this.seoService.setPageSEO({
+      title: 'About Lamitna - Event Booking Platform',
+      titleAr: 'عن لمتنا - منصة حجز الفعاليات',
+      description:
+        'Learn about Lamitna, the leading event booking platform in Kuwait. Discover our mission, values, and how we connect customers with professional service providers.',
+      descriptionAr:
+        'تعرف على لمتنا، منصة حجز الفعاليات الرائدة في الكويت. اكتشف رسالتنا وقيمنا وكيف نربط العملاء مع مقدمي الخدمات المحترفين.',
+      keywords: [
+        'about lamitna',
+        'event booking platform',
+        'Kuwait services',
+        'our mission',
+      ],
+      keywordsAr: ['عن لمتنا', 'منصة حجز الفعاليات', 'خدمات الكويت', 'رسالتنا'],
+      image: 'https://lamitna.com/assets/EnOr-image.png',
+      url: 'https://lamitna.com/about',
+      type: 'website',
+    });
+
+    // Add breadcrumb schema
+    this.seoService.addStructuredData(
+      this.seoService.getBreadcrumbSchema([
+        { name: 'Home', url: 'https://lamitna.com/home' },
+        { name: 'About', url: 'https://lamitna.com/about' },
+      ]),
+    );
+  }
+}

@@ -10,6 +10,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject, takeUntil } from 'rxjs';
+import { SeoService } from '../../core/services/seo.service';
 
 import { AuthService } from '../../core/services/auth.service';
 import { LanguageService } from '../../core/services/language.service';
@@ -118,7 +119,7 @@ export class HomeComponent implements OnInit, OnDestroy {
         'corporate',
         'graduation',
         'funeral',
-      ].includes(cat.value)
+      ].includes(cat.value),
     );
   }
 
@@ -135,7 +136,7 @@ export class HomeComponent implements OnInit, OnDestroy {
             'corporate',
             'graduation',
             'funeral',
-          ].includes(cat.value)
+          ].includes(cat.value),
       ),
     ];
   }
@@ -146,10 +147,51 @@ export class HomeComponent implements OnInit, OnDestroy {
     private translationService: TranslationService,
     public languageService: LanguageService,
     private translate: TranslateService,
-    private searchService: SearchService
+    private searchService: SearchService,
+    private seoService: SeoService,
   ) {}
 
   ngOnInit() {
+    // Set SEO metadata for Home page
+    this.seoService.setPageSEO({
+      title: 'Lamitna - Event Booking Platform | Book Professional Services',
+      titleAr: 'لمتنا - منصة حجز الفعاليات | احجز الخدمات الاحترافية',
+      description:
+        'Book professional event services instantly. Find vendors, suppliers, and event service providers in Kuwait for weddings, birthdays, corporate events and more.',
+      descriptionAr:
+        'احجز خدمات الفعاليات الاحترافية على الفور. ابحث عن الموردين والمزودين ومقدمي خدمات الفعاليات في الكويت للأعراس والحفلات وحفلات الشركات والمزيد.',
+      keywords: [
+        'event booking',
+        'event services',
+        'professional services',
+        'party planning',
+        'Kuwait',
+        'weddings',
+        'birthdays',
+        'corporate events',
+      ],
+      keywordsAr: [
+        'حجز الفعاليات',
+        'خدمات الفعاليات',
+        'خدمات احترافية',
+        'تنظيم الحفلات',
+        'الكويت',
+        'أعراس',
+        'حفلات أعياد ميلاد',
+        'فعاليات الشركات',
+      ],
+      image: 'https://lamitna.com/assets/EnOr-image.png',
+      url: 'https://lamitna.com/home',
+      type: 'website',
+    });
+
+    // Add breadcrumb schema
+    this.seoService.addStructuredData(
+      this.seoService.getBreadcrumbSchema([
+        { name: 'Home', url: 'https://lamitna.com/home' },
+      ]),
+    );
+
     this.authService.currentUser$
       .pipe(takeUntil(this.destroy$))
       .subscribe((user) => {
@@ -255,7 +297,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     // Focus on first input after modal opens
     setTimeout(() => {
       const firstInput = document.querySelector(
-        '.search-modal input, .search-modal select'
+        '.search-modal input, .search-modal select',
       ) as HTMLElement;
       firstInput?.focus();
     }, 100);
@@ -302,7 +344,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   onSearchSubmit() {
     const selectedRange = this.peopleRanges.find(
-      (range) => range.label === this.searchForm.people
+      (range) => range.label === this.searchForm.people,
     );
 
     const queryParams: any = {};
@@ -390,7 +432,7 @@ export class HomeComponent implements OnInit, OnDestroy {
         const nonZero = sorted.filter((k) => counts[k] > 0);
         this.popularCategories = (nonZero.length > 0 ? nonZero : sorted).slice(
           0,
-          6
+          6,
         );
       },
       error: () => {

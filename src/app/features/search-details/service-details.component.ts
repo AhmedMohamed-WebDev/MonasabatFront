@@ -21,6 +21,7 @@ import { RatingService } from '../../core/services/rating.service';
 import { PhoneUtils } from '../../core/utils/phone.utils';
 import { StarPickerComponent } from '../../shared/components/star-picker/star-picker.component';
 import { Subject, takeUntil } from 'rxjs';
+import { SeoService } from '../../core/services/seo.service';
 
 @Component({
   selector: 'app-service-detail',
@@ -83,7 +84,8 @@ export class ServiceDetailComponent implements OnInit, OnDestroy {
     private languageService: LanguageService,
     private translationService: TranslationService,
     private notificationService: NotificationService,
-    private ratingService: RatingService
+    private ratingService: RatingService,
+    private seoService: SeoService,
   ) {}
 
   ngOnInit() {
@@ -123,10 +125,80 @@ export class ServiceDetailComponent implements OnInit, OnDestroy {
       next: (data: any) => {
         console.log('Service detail fetched:', data);
         this.service = data;
+
+        // Set SEO metadata for Service Details page
+        const metaDescription = data.description
+          ? data.description.substring(0, 160).concat('...')
+          : 'Professional service available on Lamitna event booking platform';
+
+        const categoryNameAr = this.getCategoryNameAr(data.category);
+        const metaDescriptionAr =
+          data.descriptionAr ||
+          (data.description
+            ? data.description.substring(0, 160).concat('...')
+            : 'خدمة احترافية متاحة على منصة لمتنا لحجز الفعاليات');
+
+        this.seoService.setPageSEO({
+          title: `${data.name || 'Service'} - Book on Lamitna Event Booking`,
+          titleAr: `${data.nameAr || data.name || 'الخدمة'} - احجز على لمتنا`,
+          description: metaDescription,
+          descriptionAr: metaDescriptionAr,
+          keywords: [
+            data.category,
+            data.location?.city || 'Kuwait',
+            'event service',
+            'professional service',
+          ],
+          keywordsAr: [
+            categoryNameAr,
+            data.location?.city || 'الكويت',
+            'خدمة فعالية',
+            'خدمة احترافية',
+          ],
+          image:
+            data.images && data.images.length > 0
+              ? data.images[0]
+              : 'https://lamitna.com/assets/EnOr-image.png',
+          url: `https://lamitna.com/service/${this.serviceId}`,
+          type: 'product',
+        });
+
+        // Add structured data for the service
+        this.seoService.addStructuredData(
+          this.seoService.getServiceSchema({
+            name: data.name,
+            description: data.description,
+            image:
+              data.images && data.images.length > 0 ? data.images[0] : null,
+            supplierName: data.supplierName || 'Lamitna Provider',
+            rating: data.averageRating || 4.5,
+            reviewCount: data.ratingCount || 0,
+            priceRange: data.price
+              ? `${data.price} KWD`
+              : 'Contact for pricing',
+          }),
+        );
+
+        // Add breadcrumb navigation
+        this.seoService.addStructuredData(
+          this.seoService.getBreadcrumbSchema([
+            { name: 'Home', url: 'https://lamitna.com/home' },
+            { name: 'Search', url: 'https://lamitna.com/search-results' },
+            {
+              name: data.category,
+              url: `https://lamitna.com/search-results?category=${data.category}`,
+            },
+            {
+              name: data.name,
+              url: `https://lamitna.com/service/${this.serviceId}`,
+            },
+          ]),
+        );
+
         // prefer server-provided aggregated rating when available
         if (this.service.ratingCount && this.service.ratingCount > 0) {
           this.serviceRating = this.getStarsFromAverage(
-            this.service.averageRating
+            this.service.averageRating,
           );
         } else {
           this.serviceRating = this.generateStarRating();
@@ -221,7 +293,7 @@ export class ServiceDetailComponent implements OnInit, OnDestroy {
             const my = this.recentReviews.find(
               (r: any) =>
                 r.user &&
-                (r.user._id === current.id || r.user.id === current.id)
+                (r.user._id === current.id || r.user.id === current.id),
             );
             if (my) {
               this.myPendingScore = my.score;
@@ -269,7 +341,7 @@ export class ServiceDetailComponent implements OnInit, OnDestroy {
       this.notificationService.show(
         'error',
         'Invalid rating',
-        'Please provide a rating between 1 and 5'
+        'Please provide a rating between 1 and 5',
       );
       return;
     }
@@ -282,7 +354,7 @@ export class ServiceDetailComponent implements OnInit, OnDestroy {
           this.notificationService.show(
             'success',
             'Thank you',
-            'Your rating was saved'
+            'Your rating was saved',
           );
           this.averageRating = res.averageRating || 0;
           this.ratingCount = res.ratingCount || 0;
@@ -294,7 +366,7 @@ export class ServiceDetailComponent implements OnInit, OnDestroy {
           this.notificationService.show(
             'error',
             'Failed',
-            err.error?.message || 'Failed to submit rating'
+            err.error?.message || 'Failed to submit rating',
           );
         },
       });
@@ -434,7 +506,7 @@ export class ServiceDetailComponent implements OnInit, OnDestroy {
       this.notificationService.show(
         'error',
         'Error',
-        'No supplier information found'
+        'No supplier information found',
       );
       return;
     }
@@ -453,7 +525,7 @@ export class ServiceDetailComponent implements OnInit, OnDestroy {
         this.notificationService.show(
           'error',
           'Error',
-          'Failed to open chat. Please try again.'
+          'Failed to open chat. Please try again.',
         );
         return;
       }
@@ -465,7 +537,7 @@ export class ServiceDetailComponent implements OnInit, OnDestroy {
         'warning',
         'Chat Not Available',
         this.chatAccess.reason ||
-          'You need an approved contact request to chat with this supplier.'
+          'You need an approved contact request to chat with this supplier.',
       );
       return;
     }
@@ -481,7 +553,7 @@ export class ServiceDetailComponent implements OnInit, OnDestroy {
       this.notificationService.show(
         'error',
         'Error',
-        'Failed to open chat. Please try again.'
+        'Failed to open chat. Please try again.',
       );
     }
   }
@@ -558,7 +630,7 @@ export class ServiceDetailComponent implements OnInit, OnDestroy {
       .checkContactRequestStatus(
         currentUser.id,
         this.service.supplier._id,
-        this.service._id
+        this.service._id,
       )
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -592,7 +664,7 @@ export class ServiceDetailComponent implements OnInit, OnDestroy {
     // and the service actually has a price provided.
     const contactOnlyByCategory = isContactOnlyService(
       this.service.category,
-      primary
+      primary,
     );
     return !contactOnlyByCategory && !this.isPriceMissing(this.service);
   }
@@ -630,7 +702,7 @@ export class ServiceDetailComponent implements OnInit, OnDestroy {
           style: 'currency',
           currency,
           maximumFractionDigits: 2,
-        }
+        },
       );
       // Some backends store raw number; ensure number
       const amount = Number(service.price) || 0;
@@ -733,7 +805,7 @@ export class ServiceDetailComponent implements OnInit, OnDestroy {
       this.notificationService.show(
         'warning',
         'Not Available',
-        'Contact requests are not available for bookable services. Please use the booking form instead.'
+        'Contact requests are not available for bookable services. Please use the booking form instead.',
       );
       return;
     }
@@ -778,7 +850,7 @@ export class ServiceDetailComponent implements OnInit, OnDestroy {
             this.notificationService.show(
               'success',
               'Contact Request Sent!',
-              'The supplier will contact you soon.'
+              'The supplier will contact you soon.',
             );
 
             // Update chat access to show pending state
@@ -790,7 +862,7 @@ export class ServiceDetailComponent implements OnInit, OnDestroy {
             this.notificationService.show(
               'error',
               'Failed',
-              response.message || 'Failed to send contact request'
+              response.message || 'Failed to send contact request',
             );
           }
         },
@@ -831,7 +903,7 @@ export class ServiceDetailComponent implements OnInit, OnDestroy {
           this.notificationService.show(
             'success',
             'Booking created',
-            'Booking created from quoted request'
+            'Booking created from quoted request',
           );
           // navigate to booking details or reload
           this.router.navigate(['/bookings']);
@@ -841,7 +913,7 @@ export class ServiceDetailComponent implements OnInit, OnDestroy {
           this.notificationService.show(
             'error',
             'Convert failed',
-            err.error?.message || 'Failed to convert request'
+            err.error?.message || 'Failed to convert request',
           );
         },
       });
@@ -931,5 +1003,29 @@ export class ServiceDetailComponent implements OnInit, OnDestroy {
     }
 
     return this.chatAccess.reason || 'Contact request required to chat';
+  }
+
+  /**
+   * Get Arabic translation of category name for SEO
+   */
+  private getCategoryNameAr(categoryName: string): string {
+    const categoryTranslations: { [key: string]: string } = {
+      catering: 'خدمات الطعام',
+      decoration: 'الديكور والزينة',
+      photography: 'التصوير الفوتوغرافي',
+      videography: 'تصوير الفيديو',
+      music: 'الموسيقى والعزف',
+      flowers: 'الزهور والنباتات',
+      makeup: 'الماكياج والعناية',
+      transportation: 'النقل والمواصلات',
+      venue: 'الأماكن والقاعات',
+      planning: 'تنظيم الفعاليات',
+      entertainment: 'الترفيه والبرامج',
+      clothing: 'الملابس والأزياء',
+      gifts: 'الهدايا والتذكارات',
+      invitations: 'بطاقات الدعوة',
+      other: 'خدمات أخرى',
+    };
+    return categoryTranslations[categoryName.toLowerCase()] || categoryName;
   }
 }

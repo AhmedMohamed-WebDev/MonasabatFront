@@ -21,6 +21,7 @@ import {
   getServiceIconClass,
 } from '../../core/models/constants/categories.const';
 import { MultiSelectComponent } from '../../shared/components/multi-select/multi-select.component';
+import { SeoService } from '../../core/services/seo.service';
 
 interface TranslatedCity {
   original: string;
@@ -133,11 +134,47 @@ export class SearchResultComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private translate: TranslateService,
     private languageService: LanguageService,
-    private translationService: TranslationService
+    private translationService: TranslationService,
+    private seoService: SeoService,
   ) {}
 
   ngOnInit() {
     this.loading = true;
+
+    // Set SEO metadata for Search Results page
+    const categoryName = this.currentParams?.category || 'services';
+    const categoryNameAr = this.getCategoryNameAr(categoryName);
+    this.seoService.setPageSEO({
+      title: `Search ${categoryName} Services - Book on Lamitna Event Booking`,
+      titleAr: `ابحث عن خدمات ${categoryNameAr} - احجز على منصة لمتنا`,
+      description: `Find and book professional ${categoryName} services in Kuwait. Browse verified suppliers, compare prices, and book instantly on Lamitna.`,
+      descriptionAr: `ابحث واحجز خدمات ${categoryNameAr} احترافية في الكويت. تصفح الموردين الموثوقين، قارن الأسعار، واحجز على الفور عبر منصة لمتنا.`,
+      keywords: [
+        'event services',
+        'search services',
+        categoryName,
+        'booking platform',
+        'Kuwait',
+      ],
+      keywordsAr: [
+        'خدمات الفعاليات',
+        'البحث عن خدمات',
+        categoryNameAr,
+        'منصة حجز',
+        'الكويت',
+      ],
+      image: 'https://lamitna.com/assets/EnOr-image.png',
+      url: 'https://lamitna.com/search-results',
+      type: 'website',
+    });
+
+    // Add breadcrumb schema
+    this.seoService.addStructuredData(
+      this.seoService.getBreadcrumbSchema([
+        { name: 'Home', url: 'https://lamitna.com/home' },
+        { name: 'Search Results', url: 'https://lamitna.com/search-results' },
+      ]),
+    );
 
     // Initialize lookups
     this.updateLookups();
@@ -149,14 +186,14 @@ export class SearchResultComponent implements OnInit, OnDestroy {
       if (this.currentParams['category']) {
         const cat = this.currentParams['category'];
         this.selectedCategory = this.eventCategories.find(
-          (c) => c.value === cat
+          (c) => c.value === cat,
         );
       } else if (this.currentParams['subcategory']) {
         const alias =
           SUBCATEGORY_TO_CATEGORY_ALIAS[this.currentParams['subcategory']];
         if (alias) {
           this.selectedCategory = this.eventCategories.find(
-            (c) => c.value === alias
+            (c) => c.value === alias,
           );
         } else {
           this.selectedCategory = undefined;
@@ -268,13 +305,13 @@ export class SearchResultComponent implements OnInit, OnDestroy {
       (city) => ({
         original: city,
         translated: this.translate.instant(getTranslationKey(city)),
-      })
+      }),
     );
     this.translatedCitiesByCountry.kuwait = this.citiesByCountry.kuwait.map(
       (city) => ({
         original: city,
         translated: this.translate.instant(getTranslationKey(city)),
-      })
+      }),
     );
   }
   private navigateWith(paramsPatch: any) {
@@ -400,7 +437,7 @@ export class SearchResultComponent implements OnInit, OnDestroy {
           ) {
             const rounded = Math.max(
               1,
-              Math.min(5, Math.round(service.averageRating))
+              Math.min(5, Math.round(service.averageRating)),
             );
             this.serviceRatings[service._id] = '⭐'.repeat(rounded);
           }
@@ -412,7 +449,7 @@ export class SearchResultComponent implements OnInit, OnDestroy {
         // Log search results for debugging
         console.log(
           `Search returned ${data.length} results for params:`,
-          this.currentParams
+          this.currentParams,
         );
       },
       error: (error) => {
@@ -446,7 +483,7 @@ export class SearchResultComponent implements OnInit, OnDestroy {
     } else {
       this.filters.selectedSubcategories =
         this.filters.selectedSubcategories.filter(
-          (s) => s !== subcategoryValue
+          (s) => s !== subcategoryValue,
         );
     }
 
@@ -476,13 +513,13 @@ export class SearchResultComponent implements OnInit, OnDestroy {
       const itemSubcategories: string[] = Array.isArray(item.subcategory)
         ? item.subcategory
         : item.subcategory
-        ? [item.subcategory]
-        : [];
+          ? [item.subcategory]
+          : [];
 
       const subcategoryMatch =
         this.filters.selectedSubcategories.length === 0 ||
         this.filters.selectedSubcategories.some((s) =>
-          itemSubcategories.includes(s)
+          itemSubcategories.includes(s),
         );
 
       // Safely handle optional price
@@ -513,7 +550,7 @@ export class SearchResultComponent implements OnInit, OnDestroy {
         // Prefer new availability format via EventItemService helper
         this.eventItemService.isDateAvailable(
           item,
-          new Date(this.filters.availableOnDate)
+          new Date(this.filters.availableOnDate),
         );
 
       return (
@@ -536,11 +573,11 @@ export class SearchResultComponent implements OnInit, OnDestroy {
       this.filters.priceRange = {
         min: Math.max(
           this.filters.minPrice,
-          this.filters.priceRange.min || this.filters.minPrice
+          this.filters.priceRange.min || this.filters.minPrice,
         ),
         max: Math.min(
           this.filters.maxPrice,
-          this.filters.priceRange.max || this.filters.maxPrice
+          this.filters.priceRange.max || this.filters.maxPrice,
         ),
       };
       // Update bounds for slider
@@ -600,7 +637,7 @@ export class SearchResultComponent implements OnInit, OnDestroy {
     if (service && service.averageRating != null && service.ratingCount > 0) {
       const rounded = Math.max(
         1,
-        Math.min(5, Math.round(service.averageRating))
+        Math.min(5, Math.round(service.averageRating)),
       );
       const stars = '⭐'.repeat(rounded);
       this.serviceRatings[serviceId] = stars;
@@ -668,7 +705,7 @@ export class SearchResultComponent implements OnInit, OnDestroy {
 
   // Return primary subcategory string (first element) when service may have multiple
   getPrimarySubcategory(
-    subcategory: string | string[] | undefined
+    subcategory: string | string[] | undefined,
   ): string | undefined {
     if (!subcategory) return undefined;
     return Array.isArray(subcategory) ? subcategory[0] : subcategory;
@@ -691,7 +728,7 @@ export class SearchResultComponent implements OnInit, OnDestroy {
         : undefined;
     if (min == null && max == null) return '';
     const match = this.peopleRanges.find(
-      (r) => r.min === min && r.max === (max ?? null)
+      (r) => r.min === min && r.max === (max ?? null),
     );
     return match?.label || '';
   }
@@ -758,7 +795,7 @@ export class SearchResultComponent implements OnInit, OnDestroy {
     lat1: number,
     lon1: number,
     lat2: number,
-    lon2: number
+    lon2: number,
   ): number {
     const R = 6371; // Earth's radius in kilometers
     const dLat = this.deg2rad(lat2 - lat1);
@@ -820,7 +857,7 @@ export class SearchResultComponent implements OnInit, OnDestroy {
           style: 'currency',
           currency,
           maximumFractionDigits: 2,
-        }
+        },
       );
       return nf.format(service.price as number);
     } catch (e) {
@@ -855,7 +892,7 @@ export class SearchResultComponent implements OnInit, OnDestroy {
     const val = Number(v);
     this.filters.priceRange.min = Math.max(
       this.priceBounds.min,
-      Math.min(val, this.filters.priceRange.max)
+      Math.min(val, this.filters.priceRange.max),
     );
     this.onPriceRangeChange();
   }
@@ -863,7 +900,7 @@ export class SearchResultComponent implements OnInit, OnDestroy {
     const val = Number(v);
     this.filters.priceRange.max = Math.min(
       this.priceBounds.max,
-      Math.max(val, this.filters.priceRange.min)
+      Math.max(val, this.filters.priceRange.min),
     );
     this.onPriceRangeChange();
   }
@@ -990,5 +1027,29 @@ export class SearchResultComponent implements OnInit, OnDestroy {
       max: this.filters.maxPrice,
     };
     this.onPriceRangeChange();
+  }
+
+  /**
+   * Get Arabic translation of category name for SEO
+   */
+  private getCategoryNameAr(categoryName: string): string {
+    const categoryTranslations: { [key: string]: string } = {
+      catering: 'خدمات الطعام',
+      decoration: 'الديكور والزينة',
+      photography: 'التصوير الفوتوغرافي',
+      videography: 'تصوير الفيديو',
+      music: 'الموسيقى والعزف',
+      flowers: 'الزهور والنباتات',
+      makeup: 'الماكياج والعناية',
+      transportation: 'النقل والمواصلات',
+      venue: 'الأماكن والقاعات',
+      planning: 'تنظيم الفعاليات',
+      entertainment: 'الترفيه والبرامج',
+      clothing: 'الملابس والأزياء',
+      gifts: 'الهدايا والتذكارات',
+      invitations: 'بطاقات الدعوة',
+      other: 'خدمات أخرى',
+    };
+    return categoryTranslations[categoryName.toLowerCase()] || categoryName;
   }
 }

@@ -1,0 +1,32 @@
+# Robots.txt for Lamitna Event Booking Platform
+User-agent: *
+Allow: /
+Allow: /home
+Allow: /search-results
+Allow: /service/*
+Allow: /about
+Allow: /contact
+Allow: /join
+
+# Disallow admin and internal pages
+Disallow: /admin-dashboard
+Disallow: /client-dashboard
+Disallow: /supplier-dashboard
+Disallow: /supplier/
+Disallow: /login
+Disallow: /register
+
+# Sitemap location
+Sitemap: https://lamitna.com/sitemap.xml
+
+# Crawl delay (in seconds) - be respectful to server resources
+Crawl-delay: 1
+
+# Rules for specific bots
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 0.5
+
+User-agent: bingbot
+Allow: /
+Crawl-delay: 1

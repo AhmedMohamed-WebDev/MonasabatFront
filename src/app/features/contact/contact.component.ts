@@ -1,9 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ContactService } from '../../core/services/contact.service';
 import { ContactMessage } from '../../core/models/contact.model';
+import { SeoService } from '../../core/services/seo.service';
 
 @Component({
   selector: 'app-contact',
@@ -12,7 +13,7 @@ import { ContactMessage } from '../../core/models/contact.model';
   templateUrl: './contact.component.html',
   styleUrls: ['./contact.component.css'],
 })
-export class ContactComponent {
+export class ContactComponent implements OnInit {
   formData: ContactMessage = {
     _id: '',
     name: '',
@@ -42,8 +43,44 @@ export class ContactComponent {
 
   constructor(
     private contactService: ContactService,
-    private translate: TranslateService
+    private translate: TranslateService,
+    private seoService: SeoService,
   ) {}
+
+  ngOnInit() {
+    // Set SEO metadata for Contact page
+    this.seoService.setPageSEO({
+      title: 'Contact Lamitna - Get in Touch',
+      titleAr: 'اتصل بلمتنا - تواصل معنا',
+      description:
+        'Have questions? Contact the Lamitna team. We are here to help you with event booking services, supplier inquiries, and any other questions you may have.',
+      descriptionAr:
+        'هل لديك أسئلة؟ اتصل بفريق لمتنا. نحن هنا لمساعدتك في خدمات حجز الفعاليات واستفسارات الموردين وأي أسئلة أخرى قد تكون لديك.',
+      keywords: [
+        'contact us',
+        'lamitna support',
+        'event booking help',
+        'customer service',
+      ],
+      keywordsAr: [
+        'اتصل بنا',
+        'دعم لمتنا',
+        'مساعدة حجز الفعاليات',
+        'خدمة العملاء',
+      ],
+      image: 'https://lamitna.com/assets/EnOr-image.png',
+      url: 'https://lamitna.com/contact',
+      type: 'website',
+    });
+
+    // Add breadcrumb schema
+    this.seoService.addStructuredData(
+      this.seoService.getBreadcrumbSchema([
+        { name: 'Home', url: 'https://lamitna.com/home' },
+        { name: 'Contact', url: 'https://lamitna.com/contact' },
+      ]),
+    );
+  }
 
   onSubmit(form: NgForm): void {
     if (form.invalid) return;
